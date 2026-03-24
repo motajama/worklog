@@ -1,0 +1,29 @@
+body {
+    background: #120f08;
+    color: #ffbf47;
+    font-family: "Courier New", monospace;
+}
+
+a {
+    color: #ffbf47;
+}
+
+.site-branding,
+.site-controls,
+.site-nav,
+.card,
+.footer-line {
+    background: #120f08;
+    border: 1px solid #ffbf47;
+}
+
+.control-link,
+.nav-link {
+    border: 1px solid #ffbf47;
+}
+
+.control-link.is-active,
+.nav-link.is-active {
+    background: #ffbf47;
+    color: #120f08;
+}
