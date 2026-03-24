@@ -1,6 +1,7 @@
 <?php
 
 use App\Controllers\AuthController;
+use App\Controllers\ProjectController;
 
 return [
 
@@ -135,36 +136,35 @@ return [
         'method' => 'GET',
         'path' => '/admin/projects',
         'name' => 'admin.projects.index',
-        'view' => 'admin/placeholder',
-        'title_key' => 'nav.projects',
+        'handler' => [ProjectController::class, 'index'],
         'middleware' => ['auth'],
     ],
     [
         'method' => 'GET',
         'path' => '/admin/project/create',
         'name' => 'admin.projects.create',
-        'view' => 'admin/placeholder',
-        'title_key' => 'nav.projects',
+        'handler' => [ProjectController::class, 'create'],
         'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/project/store',
         'name' => 'admin.projects.store',
+        'handler' => [ProjectController::class, 'store'],
         'middleware' => ['auth'],
     ],
     [
         'method' => 'GET',
         'path' => '/admin/project/{id}/edit',
         'name' => 'admin.projects.edit',
-        'view' => 'admin/placeholder',
-        'title_key' => 'nav.projects',
+        'handler' => [ProjectController::class, 'edit'],
         'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/project/{id}/update',
         'name' => 'admin.projects.update',
+        'handler' => [ProjectController::class, 'update'],
         'middleware' => ['auth'],
     ],
 

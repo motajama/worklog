@@ -121,4 +121,16 @@ return [
     'section.latest_entries' => 'latest entries',
 
     'help.login' => 'The admin area is only for you. The public side stays just a log.',
+
+    'page.admin_projects_title' => 'projects',
+    'page.admin_project_create_title' => 'new project',
+    'page.admin_project_edit_title' => 'edit project',
+
+    'label.description' => 'description',
+    'label.public_label' => 'public label',
+    'label.sort_order' => 'sort order',
+    'label.is_featured' => 'featured',
+
+    'action.new_project' => 'new project',
+    'action.back' => 'back',
 ];

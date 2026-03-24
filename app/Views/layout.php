@@ -41,7 +41,7 @@
 
                 <div class="control-group">
                     <?php if (\App\Core\Auth::check()): ?>
-                        <a href="<?php echo e(route_url('admin.dashboard')); ?>" class="control-link <?php echo route_is('admin.dashboard') ? 'is-active' : ''; ?>">
+                        <a href="<?php echo e(route_url('admin.dashboard')); ?>" class="control-link <?php echo route_starts_with('admin.') ? 'is-active' : ''; ?>">
                             admin
                         </a>
 
@@ -63,7 +63,7 @@
             <?php foreach (navigation_items() as $item): ?>
                 <a
                     href="<?php echo e(route_url($item['route'])); ?>"
-                    class="nav-link <?php echo route_is($item['route']) ? 'is-active' : ''; ?>"
+                    class="nav-link <?php echo route_starts_with($item['route']) ? 'is-active' : ''; ?>"
                 >
                     <?php echo e(t($item['label_key'])); ?>
                 </a>

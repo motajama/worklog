@@ -121,4 +121,16 @@ return [
     'section.latest_entries' => 'poslední entries',
 
     'help.login' => 'Admin část je jen pro tebe. Veřejná část zůstává jen jako log.',
+
+    'page.admin_projects_title' => 'projekty',
+    'page.admin_project_create_title' => 'nový projekt',
+    'page.admin_project_edit_title' => 'editace projektu',
+
+    'label.description' => 'popis',
+    'label.public_label' => 'veřejný label',
+    'label.sort_order' => 'pořadí',
+    'label.is_featured' => 'featured',
+
+    'action.new_project' => 'nový projekt',
+    'action.back' => 'zpět',
 ];

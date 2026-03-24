@@ -211,6 +211,19 @@ if (!function_exists('route_is')) {
     }
 }
 
+if (!function_exists('route_starts_with')) {
+    function route_starts_with(string $prefix): bool
+    {
+        $name = current_route_name();
+
+        if (!is_string($name)) {
+            return false;
+        }
+
+        return str_starts_with($name, $prefix);
+    }
+}
+
 if (!function_exists('is_admin_route')) {
     function is_admin_route(): bool
     {
