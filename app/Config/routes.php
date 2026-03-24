@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\AdminController;
 use App\Controllers\AuthController;
 use App\Controllers\EntryController;
 use App\Controllers\ProjectController;
@@ -87,8 +88,7 @@ return [
         'method' => 'GET',
         'path' => '/admin',
         'name' => 'admin.dashboard',
-        'view' => 'admin/placeholder',
-        'title_key' => 'nav.dashboard',
+        'handler' => [AdminController::class, 'dashboard'],
         'middleware' => ['auth'],
     ],
 
@@ -175,20 +175,21 @@ return [
         'method' => 'GET',
         'path' => '/admin/reflections',
         'name' => 'admin.reflections.index',
-        'view' => 'admin/placeholder',
-        'title_key' => 'nav.reflections',
+        'handler' => [ReflectionController::class, 'index'],
         'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/reflection/{id}/approve',
         'name' => 'admin.reflections.approve',
+        'handler' => [ReflectionController::class, 'approve'],
         'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/reflection/{id}/reject',
         'name' => 'admin.reflections.reject',
+        'handler' => [ReflectionController::class, 'reject'],
         'middleware' => ['auth'],
     ],
 

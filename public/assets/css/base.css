@@ -402,3 +402,52 @@ button {
     line-height: 1.45;
     white-space: pre-wrap;
 }
+
+.grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.stat-card h2 {
+    margin-bottom: 0.5rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.reflection-admin-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.reflection-admin-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.reflection-status-badge {
+    font-size: 0.875rem;
+    text-transform: lowercase;
+    opacity: 0.8;
+}
+
+.reflection-admin-meta {
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.reflection-admin-body {
+    margin-bottom: 0.75rem;
+}
+
+@media (max-width: 900px) {
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+}

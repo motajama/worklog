@@ -159,4 +159,7 @@ return [
     'label.author_email' => 'email',
     'label.reflection' => 'reflection',
     'label.is_anonymous' => 'send anonymously',
+
+    'page.admin_dashboard_title' => 'dashboard',
+    'page.admin_reflections_title' => 'reflections',
 ];

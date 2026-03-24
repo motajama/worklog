@@ -3,9 +3,36 @@
 namespace App\Controllers;
 
 use App\Core\DB;
+use App\Core\View;
 
 class ReflectionController
 {
+    public static function index(): void
+    {
+        $reflections = DB::selectAll(
+            "SELECT
+                r.*,
+                e.title AS entry_title,
+                e.entry_date,
+                e.entry_type
+             FROM reflections r
+             INNER JOIN entries e ON e.id = r.entry_id
+             ORDER BY
+                CASE r.status
+                    WHEN 'pending' THEN 0
+                    WHEN 'approved' THEN 1
+                    ELSE 2
+                END,
+                r.created_at DESC,
+                r.id DESC"
+        );
+
+        View::render('admin/reflections/index', [
+            'page_title' => t('page.admin_reflections_title'),
+            'reflections' => $reflections,
+        ]);
+    }
+
     public static function store(): void
     {
         $entryId = (int) ($_POST['entry_id'] ?? 0);
@@ -61,5 +88,55 @@ class ReflectionController
 
         flash('success', 'Reflexe byla odeslána ke schválení.');
         redirect(route_url('home') . '#entry-' . $entryId);
+    }
+
+    public static function approve(array $params): void
+    {
+        $reflectionId = (int) ($params['id'] ?? 0);
+        $reflection = self::findReflection($reflectionId);
+
+        if (!$reflection) {
+            flash('error', 'Reflexe nebyla nalezena.');
+            redirect(route_url('admin.reflections.index'));
+        }
+
+        DB::execute(
+            "UPDATE reflections
+             SET status = 'approved', reviewed_at = CURRENT_TIMESTAMP
+             WHERE id = :id",
+            ['id' => $reflectionId]
+        );
+
+        flash('success', 'Reflexe byla schválena.');
+        redirect(route_url('admin.reflections.index'));
+    }
+
+    public static function reject(array $params): void
+    {
+        $reflectionId = (int) ($params['id'] ?? 0);
+        $reflection = self::findReflection($reflectionId);
+
+        if (!$reflection) {
+            flash('error', 'Reflexe nebyla nalezena.');
+            redirect(route_url('admin.reflections.index'));
+        }
+
+        DB::execute(
+            "UPDATE reflections
+             SET status = 'rejected', reviewed_at = CURRENT_TIMESTAMP
+             WHERE id = :id",
+            ['id' => $reflectionId]
+        );
+
+        flash('success', 'Reflexe byla zamítnuta.');
+        redirect(route_url('admin.reflections.index'));
+    }
+
+    protected static function findReflection(int $id): ?array
+    {
+        return DB::selectOne(
+            'SELECT * FROM reflections WHERE id = :id LIMIT 1',
+            ['id' => $id]
+        );
     }
 }
