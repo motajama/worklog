@@ -27,6 +27,13 @@ class Router
             App::set('current_route_name', $route['name'] ?? null);
             App::set('current_route_params', $params);
 
+            self::runMiddleware($route);
+
+            if (!empty($route['handler'])) {
+                self::runHandler($route, $params);
+                return;
+            }
+
             if (!empty($route['view'])) {
                 View::render($route['view'], [
                     'route' => $route,
@@ -38,8 +45,7 @@ class Router
             }
 
             http_response_code(501);
-
-            echo 'Route matched, but action is not implemented yet.';
+            echo 'Route matched, but no view or handler is implemented yet.';
             return;
         }
 
@@ -50,6 +56,48 @@ class Router
             'route' => null,
             'params' => [],
         ]);
+    }
+
+    protected static function runMiddleware(array $route): void
+    {
+        $middlewareStack = $route['middleware'] ?? [];
+
+        foreach ($middlewareStack as $middleware) {
+            if ($middleware === 'auth') {
+                if (!Auth::check()) {
+                    $_SESSION['url.intended'] = $_SERVER['REQUEST_URI'] ?? route_url('admin.dashboard');
+                    flash('error', 'Tahle část je jen pro přihlášeného admina.');
+                    redirect(route_url('auth.login'));
+                }
+            }
+
+            if ($middleware === 'guest') {
+                if (Auth::check()) {
+                    redirect(route_url('admin.dashboard'));
+                }
+            }
+        }
+    }
+
+    protected static function runHandler(array $route, array $params = []): void
+    {
+        $handler = $route['handler'];
+
+        if (!is_array($handler) || count($handler) !== 2) {
+            http_response_code(500);
+            echo 'Invalid route handler.';
+            return;
+        }
+
+        [$class, $method] = $handler;
+
+        if (!class_exists($class) || !method_exists($class, $method)) {
+            http_response_code(500);
+            echo 'Route handler not found.';
+            return;
+        }
+
+        call_user_func([$class, $method], $params);
     }
 
     protected static function match(string $routePath, string $requestPath): ?array

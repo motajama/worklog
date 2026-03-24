@@ -104,4 +104,21 @@ return [
     'page.reflections_title' => 'reflections',
     'page.method_title' => 'how it works',
     'page.about_title' => 'about',
+
+    'nav.login' => 'login',
+    'nav.logout' => 'logout',
+
+    'page.login_title' => 'login',
+
+    'label.email' => 'email',
+    'label.username' => 'username',
+    'label.password' => 'password',
+
+    'action.login' => 'log in',
+    'action.logout' => 'log out',
+
+    'section.public_log' => 'public log',
+    'section.latest_entries' => 'latest entries',
+
+    'help.login' => 'The admin area is only for you. The public side stays just a log.',
 ];

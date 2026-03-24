@@ -76,17 +76,6 @@ if (!function_exists('config')) {
     }
 }
 
-if (!function_exists('app_state')) {
-    function app_state(?string $key = null, mixed $default = null): mixed
-    {
-        if ($key === null || $key === '') {
-            return App::get('state', $default);
-        }
-
-        return App::get($key, $default);
-    }
-}
-
 if (!function_exists('t')) {
     function t(string $key, ?string $fallback = null): string
     {
@@ -110,7 +99,15 @@ if (!function_exists('base_url')) {
             $base = '';
         }
 
-        return $base . ($path ? '/' . ltrim($path, '/') : '');
+        if ($path === '') {
+            return $base ?: '/';
+        }
+
+        if (str_starts_with($path, '?')) {
+            return ($base ?: '') . '/' . ltrim($path, '/');
+        }
+
+        return ($base ?: '') . '/' . ltrim($path, '/');
     }
 }
 
@@ -227,5 +224,55 @@ if (!function_exists('navigation_items')) {
     {
         $group = is_admin_route() ? 'admin' : 'public';
         return config('navigation.' . $group, []);
+    }
+}
+
+if (!function_exists('redirect')) {
+    function redirect(string $to): never
+    {
+        header('Location: ' . $to);
+        exit;
+    }
+}
+
+if (!function_exists('flash')) {
+    function flash(string $key, mixed $value): void
+    {
+        $_SESSION['_flash'][$key] = $value;
+    }
+}
+
+if (!function_exists('get_flash')) {
+    function get_flash(string $key, mixed $default = null): mixed
+    {
+        if (!isset($_SESSION['_flash'][$key])) {
+            return $default;
+        }
+
+        $value = $_SESSION['_flash'][$key];
+        unset($_SESSION['_flash'][$key]);
+
+        return $value;
+    }
+}
+
+if (!function_exists('old_input')) {
+    function old_input(array $data): void
+    {
+        $_SESSION['_old'] = $data;
+    }
+}
+
+if (!function_exists('old')) {
+    function old(string $key, mixed $default = ''): mixed
+    {
+        return $_SESSION['_old'][$key] ?? $default;
+    }
+}
+
+if (!function_exists('forget_old_input')) {
+    function forget_old_input(): void
+    {
+        unset($_SESSION['_old']);
     }
 }

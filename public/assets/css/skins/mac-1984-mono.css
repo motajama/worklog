@@ -12,15 +12,18 @@ a {
 .site-controls,
 .site-nav,
 .card,
-.footer-line {
+.footer-line,
+.flash {
     background: #fff;
     border: 2px solid #111;
 }
 
 .control-link,
-.nav-link {
+.nav-link,
+.control-button {
     border: 1px solid #111;
     background: #fff;
+    color: #111;
 }
 
 .control-link.is-active,

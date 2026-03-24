@@ -104,4 +104,21 @@ return [
     'page.reflections_title' => 'reflexe',
     'page.method_title' => 'jak to funguje',
     'page.about_title' => 'o projektu',
+
+    'nav.login' => 'login',
+    'nav.logout' => 'logout',
+
+    'page.login_title' => 'přihlášení',
+
+    'label.email' => 'e-mail',
+    'label.username' => 'uživatel',
+    'label.password' => 'heslo',
+
+    'action.login' => 'přihlásit se',
+    'action.logout' => 'odhlásit se',
+
+    'section.public_log' => 'veřejný log',
+    'section.latest_entries' => 'poslední entries',
+
+    'help.login' => 'Admin část je jen pro tebe. Veřejná část zůstává jen jako log.',
 ];

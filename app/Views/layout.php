@@ -38,6 +38,24 @@
                         </a>
                     <?php endforeach; ?>
                 </div>
+
+                <div class="control-group">
+                    <?php if (\App\Core\Auth::check()): ?>
+                        <a href="<?php echo e(route_url('admin.dashboard')); ?>" class="control-link <?php echo route_is('admin.dashboard') ? 'is-active' : ''; ?>">
+                            admin
+                        </a>
+
+                        <form method="post" action="<?php echo e(route_url('auth.logout')); ?>" class="inline-form">
+                            <button type="submit" class="control-link control-button">
+                                <?php echo e(t('nav.logout')); ?>
+                            </button>
+                        </form>
+                    <?php else: ?>
+                        <a href="<?php echo e(route_url('auth.login')); ?>" class="control-link <?php echo route_is('auth.login') ? 'is-active' : ''; ?>">
+                            <?php echo e(t('nav.login')); ?>
+                        </a>
+                    <?php endif; ?>
+                </div>
             </div>
         </header>
 
@@ -51,6 +69,14 @@
                 </a>
             <?php endforeach; ?>
         </nav>
+
+        <?php if ($error = get_flash('error')): ?>
+            <div class="flash flash-error"><?php echo e((string) $error); ?></div>
+        <?php endif; ?>
+
+        <?php if ($success = get_flash('success')): ?>
+            <div class="flash flash-success"><?php echo e((string) $success); ?></div>
+        <?php endif; ?>
 
         <main class="site-main">
             <?php echo $content; ?>

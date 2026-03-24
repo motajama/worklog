@@ -1,160 +1,265 @@
-SET NAMES utf8mb4;
-SET time_zone = '+00:00';
+PRAGMA foreign_keys = ON;
 
-CREATE TABLE IF NOT EXISTS app_settings (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    setting_key VARCHAR(100) NOT NULL,
-    setting_value TEXT NULL,
+BEGIN TRANSACTION;
+
+-- =========================================================
+-- APP SETTINGS
+-- =========================================================
+
+CREATE TABLE app_settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    setting_key VARCHAR(100) NOT NULL UNIQUE,
+    setting_value TEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    UNIQUE KEY uq_app_settings_key (setting_key)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
-CREATE TABLE IF NOT EXISTS projects (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+-- =========================================================
+-- USERS
+-- =========================================================
+
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'admin',
+    is_active INTEGER NOT NULL DEFAULT 1
+        CHECK (is_active IN (0, 1)),
+    last_login_at DATETIME,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================================================
+-- PROJECTS
+-- =========================================================
+
+CREATE TABLE projects (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     title VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) NOT NULL,
-    description TEXT NULL,
-    public_label VARCHAR(255) NULL,
-    visibility ENUM('private', 'public', 'masked') NOT NULL DEFAULT 'private',
-    status ENUM('active', 'paused', 'archived', 'completed') NOT NULL DEFAULT 'active',
-    locale ENUM('cs', 'en', 'bilingual') NOT NULL DEFAULT 'cs',
-    is_featured TINYINT(1) NOT NULL DEFAULT 0,
-    sort_order INT NOT NULL DEFAULT 0,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT,
+    public_label VARCHAR(255),
+    visibility VARCHAR(20) NOT NULL DEFAULT 'private'
+        CHECK (visibility IN ('private', 'public', 'masked')),
+    status VARCHAR(20) NOT NULL DEFAULT 'active'
+        CHECK (status IN ('active', 'paused', 'archived', 'completed')),
+    locale VARCHAR(20) NOT NULL DEFAULT 'cs'
+        CHECK (locale IN ('cs', 'en', 'bilingual')),
+    is_featured INTEGER NOT NULL DEFAULT 0
+        CHECK (is_featured IN (0, 1)),
+    sort_order INTEGER NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    UNIQUE KEY uq_projects_slug (slug),
-    KEY idx_projects_status (status),
-    KEY idx_projects_visibility (visibility),
-    KEY idx_projects_featured_sort (is_featured, sort_order)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
-CREATE TABLE IF NOT EXISTS categories (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+-- =========================================================
+-- CATEGORIES
+-- kind:
+--   work     = contributes to workload
+--   recovery = contributes to active recovery
+-- =========================================================
+
+CREATE TABLE categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(100) NOT NULL,
-    slug VARCHAR(100) NOT NULL,
-    kind ENUM('work', 'recovery') NOT NULL,
-    intensity_weight DECIMAL(6,2) NOT NULL DEFAULT 1.00,
-    recovery_weight DECIMAL(6,2) NOT NULL DEFAULT 0.00,
-    is_system TINYINT(1) NOT NULL DEFAULT 1,
-    sort_order INT NOT NULL DEFAULT 0,
+    slug VARCHAR(100) NOT NULL UNIQUE,
+    kind VARCHAR(20) NOT NULL
+        CHECK (kind IN ('work', 'recovery')),
+    intensity_weight DECIMAL(6,2) NOT NULL DEFAULT 1.00
+        CHECK (intensity_weight >= 0),
+    recovery_weight DECIMAL(6,2) NOT NULL DEFAULT 0.00
+        CHECK (recovery_weight >= 0),
+    is_system INTEGER NOT NULL DEFAULT 1
+        CHECK (is_system IN (0, 1)),
+    sort_order INTEGER NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    UNIQUE KEY uq_categories_slug (slug),
-    KEY idx_categories_kind_sort (kind, sort_order)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
-CREATE TABLE IF NOT EXISTS entries (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+-- =========================================================
+-- ENTRIES
+-- entry_type:
+--   achievement
+--   fuckup
+--   regen
+--   repair
+--
+-- visibility:
+--   private  = only admin
+--   public   = visible publicly
+--   internal = internal log, not public
+--
+-- Notes:
+-- - body is the main full text
+-- - public_text can be a shorter public version
+-- - private_notes stays admin-only
+-- - fuckup fields are optional and used mainly for entry_type = 'fuckup'
+-- - repair_of_entry_id links a repair to an older entry
+-- =========================================================
+
+CREATE TABLE entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     entry_date DATE NOT NULL,
-    slug VARCHAR(255) NULL,
+    slug VARCHAR(255) UNIQUE,
 
-    entry_type ENUM('achievement', 'fuckup', 'regen', 'repair') NOT NULL,
+    entry_type VARCHAR(20) NOT NULL
+        CHECK (entry_type IN ('achievement', 'fuckup', 'regen', 'repair')),
 
-    title VARCHAR(255) NULL,
+    title VARCHAR(255),
     body TEXT NOT NULL,
-    public_text TEXT NULL,
-    private_notes TEXT NULL,
+    public_text TEXT,
+    private_notes TEXT,
 
-    minutes INT UNSIGNED NOT NULL DEFAULT 0,
+    minutes INTEGER NOT NULL DEFAULT 0
+        CHECK (minutes >= 0),
 
-    category_id INT UNSIGNED NOT NULL,
-    project_id INT UNSIGNED NULL,
+    category_id INTEGER NOT NULL,
+    project_id INTEGER,
 
-    visibility ENUM('private', 'public', 'internal') NOT NULL DEFAULT 'private',
-    locale ENUM('cs', 'en', 'bilingual') NOT NULL DEFAULT 'cs',
+    visibility VARCHAR(20) NOT NULL DEFAULT 'private'
+        CHECK (visibility IN ('private', 'public', 'internal')),
 
-    is_invisible_work TINYINT(1) NOT NULL DEFAULT 0,
+    locale VARCHAR(20) NOT NULL DEFAULT 'cs'
+        CHECK (locale IN ('cs', 'en', 'bilingual')),
 
-    workload_override DECIMAL(10,2) NULL,
-    recovery_override DECIMAL(10,2) NULL,
+    is_invisible_work INTEGER NOT NULL DEFAULT 0
+        CHECK (is_invisible_work IN (0, 1)),
 
-    what_happened TEXT NULL,
-    why_it_matters TEXT NULL,
-    my_take TEXT NULL,
-    next_time TEXT NULL,
+    workload_override DECIMAL(10,2),
+    recovery_override DECIMAL(10,2),
 
-    allow_reflections TINYINT(1) NOT NULL DEFAULT 0,
+    what_happened TEXT,
+    why_it_matters TEXT,
+    my_take TEXT,
+    next_time TEXT,
 
-    repair_of_entry_id INT UNSIGNED NULL,
+    allow_reflections INTEGER NOT NULL DEFAULT 0
+        CHECK (allow_reflections IN (0, 1)),
+
+    repair_of_entry_id INTEGER,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (id),
-    UNIQUE KEY uq_entries_slug (slug),
-    KEY idx_entries_entry_date (entry_date DESC),
-    KEY idx_entries_type_date (entry_type, entry_date DESC),
-    KEY idx_entries_visibility_date (visibility, entry_date DESC),
-    KEY idx_entries_project_date (project_id, entry_date DESC),
-    KEY idx_entries_category_date (category_id, entry_date DESC),
-    KEY idx_entries_repair_of (repair_of_entry_id),
-
-    CONSTRAINT fk_entries_category
-        FOREIGN KEY (category_id) REFERENCES categories(id)
+    FOREIGN KEY (category_id)
+        REFERENCES categories(id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
 
-    CONSTRAINT fk_entries_project
-        FOREIGN KEY (project_id) REFERENCES projects(id)
+    FOREIGN KEY (project_id)
+        REFERENCES projects(id)
         ON UPDATE CASCADE
         ON DELETE SET NULL,
 
-    CONSTRAINT fk_entries_repair_of
-        FOREIGN KEY (repair_of_entry_id) REFERENCES entries(id)
+    FOREIGN KEY (repair_of_entry_id)
+        REFERENCES entries(id)
         ON UPDATE CASCADE
         ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+);
 
-CREATE TABLE IF NOT EXISTS entry_links (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    entry_id INT UNSIGNED NOT NULL,
+-- =========================================================
+-- ENTRY LINKS
+-- Traces / receipts / outputs related to an entry
+-- =========================================================
+
+CREATE TABLE entry_links (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    entry_id INTEGER NOT NULL,
     label VARCHAR(255) NOT NULL,
     url TEXT NOT NULL,
-    link_type ENUM('external', 'repo', 'article', 'media', 'file', 'other') NOT NULL DEFAULT 'external',
-    sort_order INT NOT NULL DEFAULT 0,
+    link_type VARCHAR(30) NOT NULL DEFAULT 'external'
+        CHECK (link_type IN ('external', 'repo', 'article', 'media', 'file', 'other')),
+    sort_order INTEGER NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    KEY idx_entry_links_entry (entry_id, sort_order),
-    CONSTRAINT fk_entry_links_entry
-        FOREIGN KEY (entry_id) REFERENCES entries(id)
+
+    FOREIGN KEY (entry_id)
+        REFERENCES entries(id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+);
 
-CREATE TABLE IF NOT EXISTS reflections (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    entry_id INT UNSIGNED NOT NULL,
+-- =========================================================
+-- REFLECTIONS
+-- Public responses to public fuckups (moderated)
+-- =========================================================
 
-    author_name VARCHAR(255) NULL,
-    author_email VARCHAR(255) NULL,
+CREATE TABLE reflections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    entry_id INTEGER NOT NULL,
+
+    author_name VARCHAR(255),
+    author_email VARCHAR(255),
 
     body TEXT NOT NULL,
 
-    locale ENUM('cs', 'en', 'bilingual') NOT NULL DEFAULT 'cs',
+    locale VARCHAR(20) NOT NULL DEFAULT 'cs'
+        CHECK (locale IN ('cs', 'en', 'bilingual')),
 
-    status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+    status VARCHAR(20) NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending', 'approved', 'rejected')),
 
-    is_anonymous TINYINT(1) NOT NULL DEFAULT 0,
+    is_anonymous INTEGER NOT NULL DEFAULT 0
+        CHECK (is_anonymous IN (0, 1)),
 
-    admin_note TEXT NULL,
+    admin_note TEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    reviewed_at DATETIME NULL,
+    reviewed_at DATETIME,
 
-    PRIMARY KEY (id),
-    KEY idx_reflections_status_created (status, created_at DESC),
-    KEY idx_reflections_entry (entry_id),
-
-    CONSTRAINT fk_reflections_entry
-        FOREIGN KEY (entry_id) REFERENCES entries(id)
+    FOREIGN KEY (entry_id)
+        REFERENCES entries(id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+);
 
-DROP VIEW IF EXISTS v_entry_metrics;
+-- =========================================================
+-- INDEXES
+-- =========================================================
+
+CREATE INDEX idx_projects_status
+    ON projects(status);
+
+CREATE INDEX idx_projects_visibility
+    ON projects(visibility);
+
+CREATE INDEX idx_projects_featured_sort
+    ON projects(is_featured, sort_order);
+
+CREATE INDEX idx_categories_kind_sort
+    ON categories(kind, sort_order);
+
+CREATE INDEX idx_entries_entry_date
+    ON entries(entry_date DESC);
+
+CREATE INDEX idx_entries_type_date
+    ON entries(entry_type, entry_date DESC);
+
+CREATE INDEX idx_entries_visibility_date
+    ON entries(visibility, entry_date DESC);
+
+CREATE INDEX idx_entries_project_date
+    ON entries(project_id, entry_date DESC);
+
+CREATE INDEX idx_entries_category_date
+    ON entries(category_id, entry_date DESC);
+
+CREATE INDEX idx_entries_repair_of
+    ON entries(repair_of_entry_id);
+
+CREATE INDEX idx_reflections_status_created
+    ON reflections(status, created_at DESC);
+
+CREATE INDEX idx_reflections_entry
+    ON reflections(entry_id);
+
+CREATE INDEX idx_entry_links_entry
+    ON entry_links(entry_id, sort_order);
+
+-- =========================================================
+-- VIEWS
+-- Convenience views for workload / recovery calculations
+-- =========================================================
+
 CREATE VIEW v_entry_metrics AS
 SELECT
     e.id,
@@ -187,7 +292,6 @@ SELECT
 FROM entries e
 INNER JOIN categories c ON c.id = e.category_id;
 
-DROP VIEW IF EXISTS v_daily_totals;
 CREATE VIEW v_daily_totals AS
 SELECT
     e.entry_date,
@@ -217,3 +321,5 @@ FROM entries e
 INNER JOIN categories c ON c.id = e.category_id
 GROUP BY e.entry_date
 ORDER BY e.entry_date DESC;
+
+COMMIT;

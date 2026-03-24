@@ -1,5 +1,7 @@
 <?php
 
+use App\Controllers\AuthController;
+
 return [
 
     /*
@@ -17,62 +19,11 @@ return [
     ],
     [
         'method' => 'GET',
-        'path' => '/archive',
-        'name' => 'archive',
+        'path' => '/about',
+        'name' => 'about',
         'view' => 'pages/placeholder',
-        'title_key' => 'page.archive_title',
+        'title_key' => 'page.about_title',
     ],
-    [
-        'method' => 'GET',
-        'path' => '/month/{year}/{month}',
-        'name' => 'month.show',
-        'view' => 'pages/placeholder',
-        'title_key' => 'page.archive_title',
-    ],
-
-    [
-        'method' => 'GET',
-        'path' => '/projects',
-        'name' => 'projects.index',
-        'view' => 'pages/placeholder',
-        'title_key' => 'page.projects_title',
-    ],
-    [
-        'method' => 'GET',
-        'path' => '/project/{slug}',
-        'name' => 'projects.show',
-        'view' => 'pages/placeholder',
-        'title_key' => 'page.projects_title',
-    ],
-
-    [
-        'method' => 'GET',
-        'path' => '/fuckups',
-        'name' => 'fuckups.index',
-        'view' => 'pages/placeholder',
-        'title_key' => 'page.fuckups_title',
-    ],
-    [
-        'method' => 'GET',
-        'path' => '/fuckup/{slug}',
-        'name' => 'fuckups.show',
-        'view' => 'pages/placeholder',
-        'title_key' => 'page.fuckups_title',
-    ],
-
-    [
-        'method' => 'GET',
-        'path' => '/reflections',
-        'name' => 'reflections.index',
-        'view' => 'pages/placeholder',
-        'title_key' => 'page.reflections_title',
-    ],
-    [
-        'method' => 'POST',
-        'path' => '/fuckup/{slug}/reflection',
-        'name' => 'reflections.store',
-    ],
-
     [
         'method' => 'GET',
         'path' => '/method',
@@ -80,12 +31,46 @@ return [
         'view' => 'pages/placeholder',
         'title_key' => 'page.method_title',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Public reflection endpoint
+    |--------------------------------------------------------------------------
+    */
+
+    [
+        'method' => 'POST',
+        'path' => '/reflection/store',
+        'name' => 'reflections.store',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Auth routes
+    |--------------------------------------------------------------------------
+    */
+
     [
         'method' => 'GET',
-        'path' => '/about',
-        'name' => 'about',
-        'view' => 'pages/placeholder',
-        'title_key' => 'page.about_title',
+        'path' => '/login',
+        'name' => 'auth.login',
+        'view' => 'auth/login',
+        'title_key' => 'page.login_title',
+        'middleware' => ['guest'],
+    ],
+    [
+        'method' => 'POST',
+        'path' => '/login',
+        'name' => 'auth.login.submit',
+        'handler' => [AuthController::class, 'login'],
+        'middleware' => ['guest'],
+    ],
+    [
+        'method' => 'POST',
+        'path' => '/logout',
+        'name' => 'auth.logout',
+        'handler' => [AuthController::class, 'logout'],
+        'middleware' => ['auth'],
     ],
 
     /*
@@ -100,6 +85,7 @@ return [
         'name' => 'admin.dashboard',
         'view' => 'admin/placeholder',
         'title_key' => 'nav.dashboard',
+        'middleware' => ['auth'],
     ],
 
     [
@@ -108,6 +94,7 @@ return [
         'name' => 'admin.entries.index',
         'view' => 'admin/placeholder',
         'title_key' => 'nav.entries',
+        'middleware' => ['auth'],
     ],
     [
         'method' => 'GET',
@@ -115,11 +102,13 @@ return [
         'name' => 'admin.entries.create',
         'view' => 'admin/placeholder',
         'title_key' => 'nav.entries',
+        'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/entry/store',
         'name' => 'admin.entries.store',
+        'middleware' => ['auth'],
     ],
     [
         'method' => 'GET',
@@ -127,16 +116,19 @@ return [
         'name' => 'admin.entries.edit',
         'view' => 'admin/placeholder',
         'title_key' => 'nav.entries',
+        'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/entry/{id}/update',
         'name' => 'admin.entries.update',
+        'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/entry/{id}/delete',
         'name' => 'admin.entries.delete',
+        'middleware' => ['auth'],
     ],
 
     [
@@ -145,6 +137,7 @@ return [
         'name' => 'admin.projects.index',
         'view' => 'admin/placeholder',
         'title_key' => 'nav.projects',
+        'middleware' => ['auth'],
     ],
     [
         'method' => 'GET',
@@ -152,11 +145,13 @@ return [
         'name' => 'admin.projects.create',
         'view' => 'admin/placeholder',
         'title_key' => 'nav.projects',
+        'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/project/store',
         'name' => 'admin.projects.store',
+        'middleware' => ['auth'],
     ],
     [
         'method' => 'GET',
@@ -164,11 +159,13 @@ return [
         'name' => 'admin.projects.edit',
         'view' => 'admin/placeholder',
         'title_key' => 'nav.projects',
+        'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/project/{id}/update',
         'name' => 'admin.projects.update',
+        'middleware' => ['auth'],
     ],
 
     [
@@ -177,16 +174,19 @@ return [
         'name' => 'admin.reflections.index',
         'view' => 'admin/placeholder',
         'title_key' => 'nav.reflections',
+        'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/reflection/{id}/approve',
         'name' => 'admin.reflections.approve',
+        'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/reflection/{id}/reject',
         'name' => 'admin.reflections.reject',
+        'middleware' => ['auth'],
     ],
 
     [
@@ -195,5 +195,6 @@ return [
         'name' => 'admin.settings',
         'view' => 'admin/placeholder',
         'title_key' => 'nav.settings',
+        'middleware' => ['auth'],
     ],
 ];

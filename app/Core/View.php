@@ -2,7 +2,7 @@
 
 namespace App\Core;
 
-RuntimeException;
+use RuntimeException;
 
 class View
 {
