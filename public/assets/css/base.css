@@ -1,3 +1,24 @@
+:root {
+    --font-body: system-ui, sans-serif;
+    --font-title: var(--font-body);
+    --font-ui: var(--font-body);
+    --font-mono: ui-monospace, monospace;
+
+    --font-weight-title: 700;
+
+    --color-bg: #ffffff;
+    --color-panel-bg: #ffffff;
+    --color-text: #111111;
+    --color-muted: rgba(0, 0, 0, 0.75);
+    --color-border: currentColor;
+
+    --border-strong: 2px solid currentColor;
+    --border-heavy: 2px solid currentColor;
+
+    --shadow-button: none;
+    --shadow-panel: none;
+}
+
 *,
 *::before,
 *::after {
@@ -12,6 +33,9 @@ body {
     margin: 0;
     line-height: 1.45;
     text-rendering: optimizeLegibility;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
 }
 
 body,
@@ -24,6 +48,7 @@ textarea {
 
 a {
     text-decoration: none;
+    color: inherit;
 }
 
 a:hover {
@@ -34,6 +59,7 @@ pre,
 code {
     white-space: pre-wrap;
     word-break: break-word;
+    font-family: var(--font-mono);
 }
 
 table {
@@ -73,11 +99,13 @@ td {
 .footer-line,
 .flash {
     padding: 0.75rem;
+    background: var(--color-panel-bg);
 }
 
 .site-title {
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: var(--font-weight-title);
+    font-family: var(--font-title);
     display: inline-block;
     margin-bottom: 0.25rem;
 }
@@ -102,6 +130,7 @@ td {
 .control-label {
     font-weight: 700;
     text-transform: lowercase;
+    font-family: var(--font-ui);
 }
 
 .control-link,
@@ -137,6 +166,8 @@ td {
 .page-header h1 {
     margin: 0 0 0.4rem;
     font-size: 1.8rem;
+    font-family: var(--font-title);
+    font-weight: var(--font-weight-title);
 }
 
 .page-lead {
@@ -158,6 +189,8 @@ td {
     margin-top: 0;
     font-size: 1rem;
     text-transform: lowercase;
+    font-family: var(--font-title);
+    font-weight: var(--font-weight-title);
 }
 
 .card p:last-child,
@@ -202,6 +235,7 @@ button {
 
 button {
     cursor: pointer;
+    box-shadow: var(--shadow-button);
 }
 
 .auth-card,
@@ -306,6 +340,7 @@ button {
     margin: 0;
     font-size: 1.2rem;
     text-transform: lowercase;
+    font-family: var(--font-title);
 }
 
 .log-list {
@@ -337,6 +372,7 @@ button {
 
 .log-entry-title {
     font-weight: 700;
+    font-family: var(--font-title);
 }
 
 .log-entry-meta {
@@ -397,7 +433,7 @@ button {
 
 .ascii-block {
     margin: 0;
-    font-family: "Monaco", "Courier New", monospace;
+    font-family: var(--font-mono);
     font-size: 0.95rem;
     line-height: 1.45;
     white-space: pre-wrap;
@@ -415,6 +451,7 @@ button {
     font-size: 2rem;
     font-weight: 700;
     line-height: 1;
+    font-family: var(--font-title);
 }
 
 .reflection-admin-list {

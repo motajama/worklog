@@ -1,3 +1,23 @@
+:root {
+    --font-body: "Helvetica Neue", Arial, sans-serif;
+    --font-title: "Helvetica Neue", Arial, sans-serif;
+    --font-ui: "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "Courier New", monospace;
+
+    --font-weight-title: 700;
+
+    --color-bg: #f3f1ec;
+    --color-panel-bg: #fffdf8;
+    --color-text: #111;
+    --color-muted: rgba(0, 0, 0, 0.75);
+
+    --border-strong: 2px solid #111;
+    --border-heavy: 3px solid #111;
+
+    --shadow-button: 2px 2px 0 #111;
+    --shadow-panel: 4px 4px 0 #111;
+}
+
 body {
     background: #fafafa;
     color: #000;
