@@ -277,3 +277,17 @@ button {
         font-size: 1.4rem;
     }
 }
+
+.fuckup-fields {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid currentColor;
+}
+
+.fuckup-fields h2 {
+    margin-top: 0;
+}
+
+.danger-zone {
+    margin-top: 1rem;
+}

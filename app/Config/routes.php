@@ -1,6 +1,7 @@
 <?php
 
 use App\Controllers\AuthController;
+use App\Controllers\EntryController;
 use App\Controllers\ProjectController;
 
 return [
@@ -93,42 +94,42 @@ return [
         'method' => 'GET',
         'path' => '/admin/entries',
         'name' => 'admin.entries.index',
-        'view' => 'admin/placeholder',
-        'title_key' => 'nav.entries',
+        'handler' => [EntryController::class, 'index'],
         'middleware' => ['auth'],
     ],
     [
         'method' => 'GET',
         'path' => '/admin/entry/create',
         'name' => 'admin.entries.create',
-        'view' => 'admin/placeholder',
-        'title_key' => 'nav.entries',
+        'handler' => [EntryController::class, 'create'],
         'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/entry/store',
         'name' => 'admin.entries.store',
+        'handler' => [EntryController::class, 'store'],
         'middleware' => ['auth'],
     ],
     [
         'method' => 'GET',
         'path' => '/admin/entry/{id}/edit',
         'name' => 'admin.entries.edit',
-        'view' => 'admin/placeholder',
-        'title_key' => 'nav.entries',
+        'handler' => [EntryController::class, 'edit'],
         'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/entry/{id}/update',
         'name' => 'admin.entries.update',
+        'handler' => [EntryController::class, 'update'],
         'middleware' => ['auth'],
     ],
     [
         'method' => 'POST',
         'path' => '/admin/entry/{id}/delete',
         'name' => 'admin.entries.delete',
+        'handler' => [EntryController::class, 'delete'],
         'middleware' => ['auth'],
     ],
 

@@ -133,4 +133,25 @@ return [
 
     'action.new_project' => 'nový projekt',
     'action.back' => 'zpět',
+
+    'page.admin_entries_title' => 'entries',
+    'page.admin_entry_create_title' => 'nový entry',
+    'page.admin_entry_edit_title' => 'editace entry',
+
+    'label.category' => 'kategorie',
+    'label.body' => 'text',
+    'label.public_text' => 'veřejný text',
+    'label.private_notes' => 'soukromé poznámky',
+    'label.workload_override' => 'workload override',
+    'label.recovery_override' => 'recovery override',
+    'label.is_invisible_work' => 'invisible work',
+    'label.allow_reflections' => 'povolit reflexe',
+    'label.what_happened' => 'co se stalo',
+    'label.why_it_matters' => 'proč na tom záleží',
+    'label.my_take' => 'moje reflexe',
+    'label.next_time' => 'co příště',
+
+    'action.new_entry' => 'nový entry',
+
+    'section.danger_zone' => 'danger zone',
 ];

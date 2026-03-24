@@ -133,4 +133,25 @@ return [
 
     'action.new_project' => 'new project',
     'action.back' => 'back',
+
+    'page.admin_entries_title' => 'entries',
+    'page.admin_entry_create_title' => 'new entry',
+    'page.admin_entry_edit_title' => 'edit entry',
+
+    'label.category' => 'category',
+    'label.body' => 'body',
+    'label.public_text' => 'public text',
+    'label.private_notes' => 'private notes',
+    'label.workload_override' => 'workload override',
+    'label.recovery_override' => 'recovery override',
+    'label.is_invisible_work' => 'invisible work',
+    'label.allow_reflections' => 'allow reflections',
+    'label.what_happened' => 'what happened',
+    'label.why_it_matters' => 'why it matters',
+    'label.my_take' => 'my take',
+    'label.next_time' => 'next time',
+
+    'action.new_entry' => 'new entry',
+
+    'section.danger_zone' => 'danger zone',
 ];
