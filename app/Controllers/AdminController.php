@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\DB;
 use App\Core\View;
+use App\Services\BalanceService;
 
 class AdminController
 {
@@ -56,6 +57,8 @@ class AdminController
             ],
             'latest_entries' => $latestEntries,
             'pending_reflections' => $pendingReflections,
+            'balance_7' => BalanceService::rangeSummary(7),
+            'balance_30' => BalanceService::rangeSummary(30),
         ]);
     }
 }

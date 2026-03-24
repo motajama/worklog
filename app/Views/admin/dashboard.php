@@ -7,13 +7,15 @@ $stats = $stats ?? [
 
 $latestEntries = $latest_entries ?? [];
 $pendingReflections = $pending_reflections ?? [];
+$balance7 = $balance_7 ?? null;
+$balance30 = $balance_30 ?? null;
 ?>
 
 <section class="page-section">
     <header class="page-header">
         <h1><?php echo e($page_title ?? t('page.admin_dashboard_title')); ?></h1>
         <p class="page-lead">
-            Přehled toho, co se právě děje: entries, projekty a reflexe čekající na moderaci.
+            Přehled toho, co se právě děje: entries, projekty, pending reflexe a balance.
         </p>
     </header>
 
@@ -32,6 +34,27 @@ $pendingReflections = $pending_reflections ?? [];
             <h2>pending reflections</h2>
             <div class="stat-number"><?php echo e((string) $stats['pending_reflections']); ?></div>
         </article>
+    </div>
+
+    <div class="grid grid-2">
+        <?php foreach ([7 => $balance7, 30 => $balance30] as $days => $balance): ?>
+            <?php if ($balance): ?>
+                <article class="card ascii-card">
+                    <h2>balance / last <?php echo e((string) $days); ?> days</h2>
+                    <pre class="ascii-block"><?php
+echo e('entries                ' . $balance['entry_count']) . "\n";
+echo e('work total             ' . $balance['work_hours_label']) . "\n";
+echo e('sleep baseline         ' . $balance['sleep_hours_label']) . "\n";
+echo e('active regen           ' . $balance['active_recovery_hours_label']) . "\n";
+echo e('required regen         ' . $balance['required_active_recovery_hours_label']) . "\n";
+echo e('regen delta            ' . $balance['recovery_delta_hours_label']) . "\n";
+echo e('balance ratio          ' . $balance['balance_ratio_label'] . '  ' . $balance['balance_bar']) . "\n";
+echo e('active regen ratio     ' . $balance['active_recovery_ratio_label'] . '  ' . $balance['active_recovery_bar']) . "\n";
+echo e('status                 ' . $balance['balance_status']) . "\n";
+?></pre>
+                </article>
+            <?php endif; ?>
+        <?php endforeach; ?>
     </div>
 
     <div class="grid grid-2">

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\DB;
 use App\Core\View;
+use App\Services\BalanceService;
 
 class PublicLogController
 {
@@ -64,12 +65,14 @@ class PublicLogController
 
         $groupedEntries = self::groupByMonth($entries);
         $summary = self::buildSummary($entries, 180);
+        $balance30 = BalanceService::rangeSummary(30, 'public');
 
         View::render('pages/home', [
             'page_title' => t('page.home_title'),
             'month_groups' => $groupedEntries,
             'reflections_by_entry' => $reflectionsByEntry,
             'summary' => $summary,
+            'balance_30' => $balance30,
         ]);
     }
 

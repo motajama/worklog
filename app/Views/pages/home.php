@@ -10,6 +10,7 @@ $summaryData = $summary ?? [
     'recovery_mix' => [],
     'type_mix' => [],
 ];
+$balance30 = $balance_30 ?? null;
 ?>
 
 <section class="page-section public-log-page">
@@ -19,6 +20,23 @@ $summaryData = $summary ?? [
             Veřejná etika práce. Krátké záznamy o tom, co se povedlo, co drhlo, co drží práci pohromadě a kde je potřeba obnova.
         </p>
     </header>
+
+    <?php if ($balance30): ?>
+        <article class="card ascii-card">
+            <h2>balance / last 30 days</h2>
+            <pre class="ascii-block"><?php
+echo e('public entries         ' . $balance30['entry_count']) . "\n";
+echo e('work total             ' . $balance30['work_hours_label']) . "\n";
+echo e('sleep baseline         ' . $balance30['sleep_hours_label']) . "\n";
+echo e('active regen           ' . $balance30['active_recovery_hours_label']) . "\n";
+echo e('required regen         ' . $balance30['required_active_recovery_hours_label']) . "\n";
+echo e('regen delta            ' . $balance30['recovery_delta_hours_label']) . "\n";
+echo e('balance ratio          ' . $balance30['balance_ratio_label'] . '  ' . $balance30['balance_bar']) . "\n";
+echo e('active regen ratio     ' . $balance30['active_recovery_ratio_label'] . '  ' . $balance30['active_recovery_bar']) . "\n";
+echo e('status                 ' . $balance30['balance_status']) . "\n";
+?></pre>
+        </article>
+    <?php endif; ?>
 
     <section class="ascii-summary">
         <article class="card ascii-card">
