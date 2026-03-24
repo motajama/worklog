@@ -154,4 +154,9 @@ return [
     'action.new_entry' => 'nový entry',
 
     'section.danger_zone' => 'danger zone',
+
+    'label.author_name' => 'jméno',
+    'label.author_email' => 'e-mail',
+    'label.reflection' => 'reflexe',
+    'label.is_anonymous' => 'odeslat anonymně',
 ];

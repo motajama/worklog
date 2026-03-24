@@ -3,6 +3,8 @@
 use App\Controllers\AuthController;
 use App\Controllers\EntryController;
 use App\Controllers\ProjectController;
+use App\Controllers\PublicLogController;
+use App\Controllers\ReflectionController;
 
 return [
 
@@ -16,8 +18,7 @@ return [
         'method' => 'GET',
         'path' => '/',
         'name' => 'home',
-        'view' => 'pages/home',
-        'title_key' => 'page.home_title',
+        'handler' => [PublicLogController::class, 'home'],
     ],
     [
         'method' => 'GET',
@@ -44,6 +45,7 @@ return [
         'method' => 'POST',
         'path' => '/reflection/store',
         'name' => 'reflections.store',
+        'handler' => [ReflectionController::class, 'store'],
     ],
 
     /*

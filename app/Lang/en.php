@@ -154,4 +154,9 @@ return [
     'action.new_entry' => 'new entry',
 
     'section.danger_zone' => 'danger zone',
+
+    'label.author_name' => 'name',
+    'label.author_email' => 'email',
+    'label.reflection' => 'reflection',
+    'label.is_anonymous' => 'send anonymously',
 ];
