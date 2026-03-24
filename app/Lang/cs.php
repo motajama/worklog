@@ -162,4 +162,14 @@ return [
 
     'page.admin_dashboard_title' => 'dashboard',
     'page.admin_reflections_title' => 'reflexe',
+
+    'page.admin_settings_title' => 'nastavení',
+
+    'label.home_intro_html_cs' => 'úvodní html (cs)',
+    'label.home_intro_html_en' => 'úvodní html (en)',
+    'label.current_password' => 'současné heslo',
+    'label.new_password' => 'nové heslo',
+    'label.new_password_confirm' => 'potvrzení nového hesla',
+
+    'action.change_password' => 'změnit heslo',
 ];

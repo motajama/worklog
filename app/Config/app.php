@@ -14,6 +14,8 @@ return [
         'win3-gray',
         'amber-terminal',
         'zine-xerox',
+        'atari',
+        'msdos',
     ],
 
     'sleep_minutes_per_day' => 480,

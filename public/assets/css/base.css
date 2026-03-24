@@ -17,6 +17,10 @@
 
     --shadow-button: none;
     --shadow-panel: none;
+
+    --panel-bg: var(--color-panel-bg);
+    --panel-border: var(--border-strong);
+    --panel-shadow: var(--shadow-panel);
 }
 
 *,
@@ -97,9 +101,12 @@ td {
 .site-nav,
 .card,
 .footer-line,
-.flash {
+.flash,
+.page-header {
     padding: 0.75rem;
     background: var(--color-panel-bg);
+    border: var(--border-strong);
+    box-shadow: var(--shadow-panel);
 }
 
 .site-title {
@@ -134,10 +141,19 @@ td {
 }
 
 .control-link,
-.nav-link,
-.button-link {
+.nav-link {
     display: inline-block;
     padding: 0.2rem 0.45rem;
+}
+
+.button-link {
+    display: inline-block;
+    padding: 0.5rem 0.8rem;
+    border: var(--border-strong);
+    background: var(--color-panel-bg);
+    color: inherit;
+    text-decoration: none;
+    box-shadow: var(--shadow-button);
 }
 
 .control-button {
@@ -160,6 +176,10 @@ td {
 }
 
 .page-header {
+    margin-bottom: 1rem;
+}
+
+.flash {
     margin-bottom: 1rem;
 }
 
@@ -238,18 +258,36 @@ button {
     box-shadow: var(--shadow-button);
 }
 
-.auth-card,
+.auth-page {
+    max-width: 860px;
+    margin: 0 auto;
+}
+
+.auth-page .card {
+    text-align: center;
+}
+
+.auth-card {
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+.auth-card form {
+    text-align: left;
+}
+
 .admin-form-card {
     max-width: 760px;
 }
 
-.flash {
-    margin-bottom: 1rem;
+.flash-error {
+    border-color: red;
 }
 
-.toolbar {
-    margin-bottom: 1rem;
+.flash-success {
+    border-color: currentColor;
 }
+
 
 .table-wrap {
     overflow-x: auto;
@@ -487,4 +525,72 @@ button {
     .grid-3 {
         grid-template-columns: 1fr;
     }
+}
+
+.intro-page {
+    max-width: 860px;
+    margin: 0 auto;
+}
+
+.intro-page .card {
+    text-align: center;
+}
+
+.rich-html {
+    line-height: 1.7;
+}
+
+.intro-page .rich-html {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+}
+
+.intro-page .rich-html > * {
+    max-width: 42rem;
+}
+
+.intro-page .rich-html h1,
+.intro-page .rich-html h2,
+.intro-page .rich-html h3,
+.intro-page .rich-html p {
+    text-align: center;
+}
+
+.rich-html h1,
+.rich-html h2,
+.rich-html h3 {
+    font-family: var(--font-title);
+    margin-top: 0;
+}
+
+.rich-html p:last-child {
+    margin-bottom: 0;
+}
+
+.settings-card {
+    height: 100%;
+}
+
+.code-textarea {
+    font-family: var(--font-mono);
+    min-height: 16rem;
+}
+
+.preview-html {
+    min-height: 16rem;
+}
+
+.button-link:hover {
+    text-decoration: none;
+    opacity: 0.9;
+}
+
+.toolbar {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }

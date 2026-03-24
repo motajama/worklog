@@ -162,4 +162,14 @@ return [
 
     'page.admin_dashboard_title' => 'dashboard',
     'page.admin_reflections_title' => 'reflections',
+
+    'page.admin_settings_title' => 'settings',
+
+    'label.home_intro_html_cs' => 'intro html (cs)',
+    'label.home_intro_html_en' => 'intro html (en)',
+    'label.current_password' => 'current password',
+    'label.new_password' => 'new password',
+    'label.new_password_confirm' => 'confirm new password',
+
+    'action.change_password' => 'change password',
 ];

@@ -2,9 +2,6 @@
 
 return [
     'public' => [
-        ['label_key' => 'nav.home', 'route' => 'home'],
-        ['label_key' => 'nav.method', 'route' => 'method'],
-        ['label_key' => 'nav.about', 'route' => 'about'],
     ],
 
     'admin' => [

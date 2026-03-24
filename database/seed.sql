@@ -72,4 +72,8 @@ INSERT INTO categories (name, slug, kind, intensity_weight, recovery_weight, sor
 -- ('Writing', 'writing', 'Umbrella project for writing projects.', 'writing', 'public', 'active', 'en', 1, 20),
 -- ('Internal Research Project', 'internal-research-project', 'Masked internal project.', 'research project', 'masked', 'active', 'en', 0, 30);
 
+INSERT INTO app_settings (setting_key, setting_value) VALUES
+('home_intro_html_cs', '<h2>Worklog</h2><p>Tato aplikace je soukromá. Veřejný log najdeš na <a href="log.php">log.php</a>.</p>'),
+('home_intro_html_en', '<h2>Worklog</h2><p>This application is private. Public log lives in <a href="log.php">log.php</a>.</p>');
+
 COMMIT;

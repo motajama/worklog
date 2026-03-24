@@ -7,6 +7,16 @@ $workMixDays = $work_mix_days ?? 180;
 
 $isEn = current_locale() === 'en';
 $currentYear = date('Y');
+$currentSkin = current_skin();
+
+$skinOptions = [
+    'zine-xerox' => 'xerox',
+    'amber-terminal' => 'amber',
+    'win3-gray' => 'win3',
+    'mac-1984-mono' => 'mac',
+    'atari' => 'atari',
+    'msdos' => 'msdos',
+];
 
 $copy = $isEn
     ? [
@@ -14,6 +24,7 @@ $copy = $isEn
         'description' => 'A public work log: what moved, what failed, what needed repair, and how recovery relates to workload.',
         'switch_cs' => 'CZ',
         'switch_en' => 'EN',
+        'skins_label' => 'skin',
         'balance_heading' => 'balance / last %d days',
         'work_heading' => 'work barometer / last %d days',
         'work_total' => 'total work time across all entries: %s',
@@ -34,12 +45,14 @@ $copy = $isEn
         'nameless_author' => 'no name',
         'panel_intro_text' => 'Click “↗ Reflections” next to an entry and the thread will open here. The pane stays fixed while the page moves underneath it.',
         'fail_badge' => 'FAIL',
+        'footer_note' => 'CC-BY-ND-NC %s',
     ]
     : [
         'title' => 'log',
         'description' => 'Veřejný pracovní log: co se pohnulo, co se nepovedlo, co potřebovalo opravu a jak obnova odpovídá workloadu.',
         'switch_cs' => 'CZ',
         'switch_en' => 'EN',
+        'skins_label' => 'skin',
         'balance_heading' => 'balance / last %d days',
         'work_heading' => 'work barometer / last %d days',
         'work_total' => 'celkový pracovní čas napříč všemi entries: %s',
@@ -60,6 +73,7 @@ $copy = $isEn
         'nameless_author' => 'bez jména',
         'panel_intro_text' => 'Klikni na „↗ Reflexe“ u konkrétního entry a vlákno se otevře tady. Panel zůstává fixovaný a stránka pod ním plyne.',
         'fail_badge' => 'FAKAP',
+        'footer_note' => 'CC-BY-ND-NC %s',
     ];
 ?>
 <!DOCTYPE html>
@@ -70,7 +84,7 @@ $copy = $isEn
     <title><?php echo e($copy['title']); ?> — <?php echo e(config('app.app_name')); ?></title>
     <meta name="description" content="<?php echo e($copy['description']); ?>">
 
-    <link rel="stylesheet" href="<?php echo e(asset('assets/css/skins/zine-xerox.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/css/skins/' . $currentSkin . '.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('assets/css/log.css')); ?>">
 </head>
 <body>
@@ -83,13 +97,13 @@ $copy = $isEn
         <div class="locale-switch-row">
             <nav class="locale-switch" aria-label="Language switch">
                 <a
-                    href="<?php echo e('log.php?lang=cs'); ?>"
+                    href="<?php echo e('log.php?lang=cs&skin=' . rawurlencode($currentSkin)); ?>"
                     class="<?php echo !$isEn ? 'is-active' : ''; ?>"
                 >
                     <?php echo e($copy['switch_cs']); ?>
                 </a>
                 <a
-                    href="<?php echo e('log.php?lang=en'); ?>"
+                    href="<?php echo e('log.php?lang=en&skin=' . rawurlencode($currentSkin)); ?>"
                     class="<?php echo $isEn ? 'is-active' : ''; ?>"
                 >
                     <?php echo e($copy['switch_en']); ?>
@@ -138,7 +152,7 @@ $copy = $isEn
 
                     <section class="log-section">
                         <h2><?php echo e(sprintf($copy['work_heading'], (int) $workMixDays)); ?></h2>
-                       
+
                         <?php if (empty($workMix['rows'])): ?>
                             <p><?php echo e($copy['no_work_data']); ?></p>
                         <?php else: ?>
@@ -303,7 +317,23 @@ $copy = $isEn
         </div>
 
         <footer class="log-footer">
-            © <?php echo e((string) $currentYear); ?> · <a href="https://www.janmotal.cz">www.janmotal.cz</a>
+            <div class="log-footer-inner">
+                <div class="log-footer-line">
+                    <?php echo e(sprintf($copy['footer_note'], (string) $currentYear)); ?>
+                </div>
+
+                <nav class="skin-switch" aria-label="Skin switch">
+                    <span class="skin-switch-label"><?php echo e($copy['skins_label']); ?>:</span>
+                    <?php foreach ($skinOptions as $skinKey => $skinLabel): ?>
+                        <a
+                            href="<?php echo e('log.php?lang=' . rawurlencode(current_locale()) . '&skin=' . rawurlencode($skinKey)); ?>"
+                            class="<?php echo $currentSkin === $skinKey ? 'is-active' : ''; ?>"
+                        >
+                            <?php echo e($skinLabel); ?>
+                        </a>
+                    <?php endforeach; ?>
+                </nav>
+            </div>
         </footer>
     </main>
 

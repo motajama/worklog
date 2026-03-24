@@ -1,21 +1,21 @@
 :root {
-    --font-body: "Helvetica Neue", Arial, sans-serif;
-    --font-title: "Helvetica Neue", Arial, sans-serif;
-    --font-ui: "Helvetica Neue", Arial, sans-serif;
+    --font-body: "Geneva", "Verdana", sans-serif;
+    --font-title: "Geneva", "Verdana", sans-serif;
+    --font-ui: "Geneva", "Verdana", sans-serif;
     --font-mono: "Courier New", monospace;
 
     --font-weight-title: 700;
 
-    --color-bg: #f3f1ec;
-    --color-panel-bg: #fffdf8;
-    --color-text: #111111;
-    --color-muted: rgba(0, 0, 0, 0.75);
+    --color-bg: #d9d9d9;
+    --color-panel-bg: #f4f4f4;
+    --color-text: #003b46;
+    --color-muted: rgba(0, 59, 70, 0.72);
 
-    --border-strong: 2px solid #111111;
-    --border-heavy: 3px solid #111111;
+    --border-strong: 2px solid #003b46;
+    --border-heavy: 3px solid #003b46;
 
-    --shadow-button: 2px 2px 0 #111111;
-    --shadow-panel: 4px 4px 0 #111111;
+    --shadow-button: 2px 2px 0 #7fa7ad;
+    --shadow-panel: 4px 4px 0 #7fa7ad;
 }
 
 body {
@@ -51,5 +51,5 @@ a {
 .control-link.is-active,
 .nav-link.is-active {
     background: var(--color-text);
-    color: var(--color-panel-bg);
+    color: #f4f4f4;
 }

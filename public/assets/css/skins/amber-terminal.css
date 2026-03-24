@@ -1,29 +1,55 @@
+:root {
+    --font-body: "Courier New", monospace;
+    --font-title: "Courier New", monospace;
+    --font-ui: "Courier New", monospace;
+    --font-mono: "Courier New", monospace;
+
+    --font-weight-title: 700;
+
+    --color-bg: #120f08;
+    --color-panel-bg: #120f08;
+    --color-text: #ffbf47;
+    --color-muted: rgba(255, 191, 71, 0.78);
+
+    --border-strong: 1px solid #ffbf47;
+    --border-heavy: 1px solid #ffbf47;
+
+    --shadow-button: none;
+    --shadow-panel: none;
+}
+
 body {
-    background: #120f08;
-    color: #ffbf47;
-    font-family: "Courier New", monospace;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
 }
 
 a {
-    color: #ffbf47;
+    color: inherit;
 }
 
 .site-branding,
 .site-controls,
 .site-nav,
 .card,
-.footer-line {
-    background: #120f08;
-    border: 1px solid #ffbf47;
+.footer-line,
+.flash,
+.page-header {
+    background: var(--color-panel-bg);
+    border: var(--border-strong);
+    box-shadow: var(--shadow-panel);
 }
 
 .control-link,
-.nav-link {
-    border: 1px solid #ffbf47;
+.nav-link,
+.button-link {
+    border: var(--border-strong);
+    background: var(--color-panel-bg);
+    box-shadow: var(--shadow-button);
 }
 
 .control-link.is-active,
 .nav-link.is-active {
-    background: #ffbf47;
-    color: #120f08;
+    background: var(--color-text);
+    color: var(--color-bg);
 }

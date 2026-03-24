@@ -1,11 +1,31 @@
+:root {
+    --font-body: "Chicago", "Charcoal", "Geneva", "Verdana", sans-serif;
+    --font-title: "Chicago", "Charcoal", "Geneva", "Verdana", sans-serif;
+    --font-ui: "Chicago", "Charcoal", "Geneva", "Verdana", sans-serif;
+    --font-mono: "Monaco", "Courier New", monospace;
+
+    --font-weight-title: 700;
+
+    --color-bg: #efefef;
+    --color-panel-bg: #ffffff;
+    --color-text: #111111;
+    --color-muted: rgba(0, 0, 0, 0.72);
+
+    --border-strong: 1px solid #111111;
+    --border-heavy: 1px solid #111111;
+
+    --shadow-button: none;
+    --shadow-panel: none;
+}
+
 body {
-    background: #f5f5f5;
-    color: #111;
-    font-family: "Chicago", "Charcoal", "Geneva", "Verdana", sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
 }
 
 a {
-    color: #111;
+    color: inherit;
 }
 
 .site-branding,
@@ -13,26 +33,33 @@ a {
 .site-nav,
 .card,
 .footer-line,
-.flash {
-    background: #fff;
-    border: 2px solid #111;
+.flash,
+.page-header {
+    background: var(--color-panel-bg);
+    border: var(--border-strong);
+    box-shadow: var(--shadow-panel);
 }
 
 .control-link,
 .nav-link,
+.button-link,
 .control-button {
-    border: 1px solid #111;
-    background: #fff;
-    color: #111;
+    border: 1px solid #111111;
+    background: var(--color-panel-bg);
+    color: var(--color-text);
+    box-shadow: none;
 }
 
 .control-link.is-active,
 .nav-link.is-active {
-    background: #111;
-    color: #fff;
+    background: var(--color-text);
+    color: var(--color-panel-bg);
 }
 
-pre,
-code {
-    font-family: "Monaco", "Courier New", monospace;
+button:hover,
+.button-link:hover,
+.control-link:hover,
+.nav-link:hover {
+    text-decoration: none;
+    opacity: 1;
 }

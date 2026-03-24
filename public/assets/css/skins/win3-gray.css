@@ -1,7 +1,27 @@
+:root {
+    --font-body: "MS Sans Serif", "Verdana", sans-serif;
+    --font-title: "MS Sans Serif", "Verdana", sans-serif;
+    --font-ui: "MS Sans Serif", "Verdana", sans-serif;
+    --font-mono: "Courier New", monospace;
+
+    --font-weight-title: 700;
+
+    --color-bg: #c0c0c0;
+    --color-panel-bg: #d4d0c8;
+    --color-text: #111111;
+    --color-muted: rgba(0, 0, 0, 0.72);
+
+    --border-strong: 1px solid #808080;
+    --border-heavy: 1px solid #808080;
+
+    --shadow-button: inset 1px 1px 0 #ffffff, inset -1px -1px 0 #555555;
+    --shadow-panel: inset 1px 1px 0 #ffffff, inset -1px -1px 0 #555555;
+}
+
 body {
-    background: #c0c0c0;
-    color: #111;
-    font-family: "MS Sans Serif", "Verdana", sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
 }
 
 a {
@@ -12,27 +32,25 @@ a {
 .site-controls,
 .site-nav,
 .card,
-.footer-line {
-    background: #d4d0c8;
-    border-top: 2px solid #fff;
-    border-left: 2px solid #fff;
-    border-right: 2px solid #555;
-    border-bottom: 2px solid #555;
+.footer-line,
+.flash,
+.page-header {
+    background: var(--color-panel-bg);
+    border: var(--border-strong);
+    box-shadow: var(--shadow-panel);
 }
 
 .control-link,
-.nav-link {
-    background: #d4d0c8;
-    border-top: 1px solid #fff;
-    border-left: 1px solid #fff;
-    border-right: 1px solid #555;
-    border-bottom: 1px solid #555;
+.nav-link,
+.button-link {
+    border: var(--border-strong);
+    background: var(--color-panel-bg);
+    box-shadow: var(--shadow-button);
 }
 
 .control-link.is-active,
 .nav-link.is-active {
-    border-top: 1px solid #555;
-    border-left: 1px solid #555;
-    border-right: 1px solid #fff;
-    border-bottom: 1px solid #fff;
+    background: #b8b4ac;
+    color: var(--color-text);
+    box-shadow: inset -1px -1px 0 #ffffff, inset 1px 1px 0 #555555;
 }

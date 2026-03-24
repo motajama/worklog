@@ -3,9 +3,10 @@
 use App\Controllers\AdminController;
 use App\Controllers\AuthController;
 use App\Controllers\EntryController;
+use App\Controllers\HomeController;
 use App\Controllers\ProjectController;
-use App\Controllers\PublicLogController;
 use App\Controllers\ReflectionController;
+use App\Controllers\SettingsController;
 
 return [
 
@@ -19,7 +20,7 @@ return [
         'method' => 'GET',
         'path' => '/',
         'name' => 'home',
-        'handler' => [PublicLogController::class, 'home'],
+        'handler' => [HomeController::class, 'index'],
     ],
     [
         'method' => 'GET',
@@ -197,8 +198,21 @@ return [
         'method' => 'GET',
         'path' => '/admin/settings',
         'name' => 'admin.settings',
-        'view' => 'admin/placeholder',
-        'title_key' => 'nav.settings',
+        'handler' => [SettingsController::class, 'edit'],
+        'middleware' => ['auth'],
+    ],
+    [
+        'method' => 'POST',
+        'path' => '/admin/settings',
+        'name' => 'admin.settings.update',
+        'handler' => [SettingsController::class, 'update'],
+        'middleware' => ['auth'],
+    ],
+    [
+        'method' => 'POST',
+        'path' => '/admin/settings/password',
+        'name' => 'admin.settings.password',
+        'handler' => [SettingsController::class, 'changePassword'],
         'middleware' => ['auth'],
     ],
 ];

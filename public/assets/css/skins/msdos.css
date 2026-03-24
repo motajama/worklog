@@ -1,21 +1,21 @@
 :root {
-    --font-body: "Helvetica Neue", Arial, sans-serif;
-    --font-title: "Helvetica Neue", Arial, sans-serif;
-    --font-ui: "Helvetica Neue", Arial, sans-serif;
+    --font-body: "Courier New", monospace;
+    --font-title: "Courier New", monospace;
+    --font-ui: "Courier New", monospace;
     --font-mono: "Courier New", monospace;
 
     --font-weight-title: 700;
 
-    --color-bg: #f3f1ec;
-    --color-panel-bg: #fffdf8;
-    --color-text: #111111;
-    --color-muted: rgba(0, 0, 0, 0.75);
+    --color-bg: #0000aa;
+    --color-panel-bg: #0000aa;
+    --color-text: #c0c0c0;
+    --color-muted: rgba(192, 192, 192, 0.75);
 
-    --border-strong: 2px solid #111111;
-    --border-heavy: 3px solid #111111;
+    --border-strong: 1px solid #c0c0c0;
+    --border-heavy: 1px solid #c0c0c0;
 
-    --shadow-button: 2px 2px 0 #111111;
-    --shadow-panel: 4px 4px 0 #111111;
+    --shadow-button: none;
+    --shadow-panel: none;
 }
 
 body {
@@ -51,5 +51,5 @@ a {
 .control-link.is-active,
 .nav-link.is-active {
     background: var(--color-text);
-    color: var(--color-panel-bg);
+    color: var(--color-bg);
 }
