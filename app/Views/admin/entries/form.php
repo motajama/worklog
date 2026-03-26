@@ -247,17 +247,12 @@ $recoveryCategories = array_values(array_filter($categories, fn($c) => $c['kind'
 (function () {
     const typeSelect = document.getElementById('entry_type');
     const fuckupFields = document.getElementById('fuckup-fields');
-    const allowReflectionsRow = document.getElementById('allow-reflections-row');
 
     function syncTypeUI() {
         const isFuckup = typeSelect && typeSelect.value === 'fuckup';
 
         if (fuckupFields) {
             fuckupFields.style.display = isFuckup ? 'block' : 'none';
-        }
-
-        if (allowReflectionsRow) {
-            allowReflectionsRow.style.display = isFuckup ? 'block' : 'none';
         }
     }
 

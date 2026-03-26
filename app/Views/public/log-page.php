@@ -197,7 +197,7 @@ $copy = $isEn
                             <ul class="log-list">
                                 <?php foreach ($group['entries'] as $entry): ?>
                                     <?php
-                                    $hasReflectionThread = $entry['entry_type'] === 'fuckup' && (int) $entry['allow_reflections'] === 1;
+                                    $hasReflectionThread = (int) $entry['allow_reflections'] === 1;
                                     $panelId = 'reflection-pane-' . (int) $entry['id'];
                                     ?>
                                     <li id="entry-<?php echo e((string) $entry['id']); ?>">
@@ -246,7 +246,7 @@ $copy = $isEn
                         <?php foreach ($monthGroups as $group): ?>
                             <?php foreach ($group['entries'] as $entry): ?>
                                 <?php
-                                $hasReflectionThread = $entry['entry_type'] === 'fuckup' && (int) $entry['allow_reflections'] === 1;
+                                $hasReflectionThread = (int) $entry['allow_reflections'] === 1;
                                 if (!$hasReflectionThread) {
                                     continue;
                                 }

@@ -299,7 +299,6 @@ class EntryController
             $whyItMatters = null;
             $myTake = null;
             $nextTime = null;
-            $allowReflections = 0;
         } else {
             $whatHappened = $whatHappened !== '' ? $whatHappened : null;
             $whyItMatters = $whyItMatters !== '' ? $whyItMatters : null;
