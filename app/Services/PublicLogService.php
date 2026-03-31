@@ -69,7 +69,11 @@ class PublicLogService
         return [
             'month_groups' => self::groupByMonth($entries, $reflectionsByEntry),
             'work_mix' => self::workMix($workMixDays),
-            'balance' => BalanceService::rangeSummary($balanceDays, null),
+
+            // public log: balance vždy za poslední uzavřený měsíc,
+            // stále ale z celého datasetu (public + private + internal)
+            'balance' => BalanceService::lastClosedMonthSummary(null),
+
             'balance_days' => $balanceDays,
             'work_mix_days' => $workMixDays,
         ];

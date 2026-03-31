@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Core\DB;
+use DateInterval;
+use DateTimeImmutable;
 
 class BalanceService
 {
@@ -10,8 +12,47 @@ class BalanceService
     {
         $days = max(1, $days);
 
-        $dateTo = date('Y-m-d');
-        $dateFrom = date('Y-m-d', strtotime('-' . ($days - 1) . ' days'));
+        $dateTo = new DateTimeImmutable('today');
+        $dateFrom = $dateTo->sub(new DateInterval('P' . ($days - 1) . 'D'));
+
+        return self::summaryForPeriod(
+            $dateFrom->format('Y-m-d'),
+            $dateTo->format('Y-m-d'),
+            $visibility
+        );
+    }
+
+    public static function lastClosedMonthSummary(?string $visibility = null): array
+    {
+        $today = new DateTimeImmutable('today');
+        $lastDayCurrentMonth = new DateTimeImmutable('last day of this month');
+
+        if ($today->format('Y-m-d') === $lastDayCurrentMonth->format('Y-m-d')) {
+            $dateFrom = $today->modify('first day of this month');
+            $dateTo = $today;
+        } else {
+            $firstDayCurrentMonth = $today->modify('first day of this month');
+            $dateTo = $firstDayCurrentMonth->modify('-1 day');
+            $dateFrom = $dateTo->modify('first day of this month');
+        }
+
+        return self::summaryForPeriod(
+            $dateFrom->format('Y-m-d'),
+            $dateTo->format('Y-m-d'),
+            $visibility
+        );
+    }
+
+    public static function summaryForPeriod(string $dateFrom, string $dateTo, ?string $visibility = null): array
+    {
+        $from = new DateTimeImmutable($dateFrom);
+        $to = new DateTimeImmutable($dateTo);
+
+        if ($from > $to) {
+            [$from, $to] = [$to, $from];
+        }
+
+        $days = (int) $from->diff($to)->days + 1;
 
         $sleepMinutesPerDay = (int) config('app.sleep_minutes_per_day', 480);
         $baseRecoveryMinutesPerDay = (float) config('app.recovery.base_minutes', 30);
@@ -46,8 +87,8 @@ class BalanceService
         ";
 
         $params = [
-            'date_from' => $dateFrom,
-            'date_to' => $dateTo,
+            'date_from' => $from->format('Y-m-d'),
+            'date_to' => $to->format('Y-m-d'),
         ];
 
         if ($visibility !== null) {
@@ -64,7 +105,9 @@ class BalanceService
         $activeRecoveryPointsTotal = (float) ($row['active_recovery_points_total'] ?? 0);
 
         $sleepMinutesTotal = $sleepMinutesPerDay * $days;
-        $requiredActiveRecoveryMinutes = (int) round(($baseRecoveryMinutesPerDay * $days) + ($workloadPointsTotal * $workloadMultiplier));
+        $requiredActiveRecoveryMinutes = (int) round(
+            ($baseRecoveryMinutesPerDay * $days) + ($workloadPointsTotal * $workloadMultiplier)
+        );
 
         $activeRecoveryMinutes = (int) round($activeRecoveryPointsTotal);
 
@@ -80,9 +123,13 @@ class BalanceService
 
         return [
             'days' => $days,
-            'date_from' => $dateFrom,
-            'date_to' => $dateTo,
+            'date_from' => $from->format('Y-m-d'),
+            'date_to' => $to->format('Y-m-d'),
             'entry_count' => $entryCount,
+
+            'period_kind' => 'closed_month',
+            'period_label_cs' => self::monthLabel($from, 'cs'),
+            'period_label_en' => self::monthLabel($from, 'en'),
 
             'work_minutes' => $workMinutes,
             'work_hours_label' => self::formatHours($workMinutes),
@@ -101,8 +148,15 @@ class BalanceService
             'required_active_recovery_minutes' => $requiredActiveRecoveryMinutes,
             'required_active_recovery_hours_label' => self::formatHours($requiredActiveRecoveryMinutes),
 
+            // původní "softened" ratio necháváme kvůli kompatibilitě
             'balance_ratio_raw' => $balanceRatio,
             'balance_ratio_label' => number_format($balanceRatio, 2, '.', ''),
+
+            // tohle je smysluplnější veřejný ukazatel
+            'display_ratio_raw' => $activeRecoveryRatio,
+            'display_ratio_label' => number_format($activeRecoveryRatio, 2, '.', ''),
+            'display_status' => self::statusFromRatio($activeRecoveryRatio),
+            'display_bar' => self::ratioBar($activeRecoveryRatio),
 
             'active_recovery_ratio_raw' => $activeRecoveryRatio,
             'active_recovery_ratio_label' => number_format($activeRecoveryRatio, 2, '.', ''),
@@ -167,5 +221,32 @@ class BalanceService
         $absolute = abs($minutes);
 
         return $sign . self::formatHours($absolute);
+    }
+
+    protected static function monthLabel(DateTimeImmutable $date, string $locale): string
+    {
+        if ($locale === 'en') {
+            return strtolower($date->format('F Y'));
+        }
+
+        $months = [
+            1 => 'leden',
+            2 => 'únor',
+            3 => 'březen',
+            4 => 'duben',
+            5 => 'květen',
+            6 => 'červen',
+            7 => 'červenec',
+            8 => 'srpen',
+            9 => 'září',
+            10 => 'říjen',
+            11 => 'listopad',
+            12 => 'prosinec',
+        ];
+
+        $month = (int) $date->format('n');
+        $year = $date->format('Y');
+
+        return ($months[$month] ?? $date->format('F')) . ' ' . $year;
     }
 }

@@ -9,6 +9,13 @@ $isEn = current_locale() === 'en';
 $currentYear = date('Y');
 $currentSkin = current_skin();
 
+$balancePeriodLabel = null;
+if ($balance) {
+    $balancePeriodLabel = $isEn
+        ? ($balance['period_label_en'] ?? null)
+        : ($balance['period_label_cs'] ?? null);
+}
+
 $skinOptions = [
     'zine-xerox' => 'xerox',
     'amber-terminal' => 'amber',
@@ -25,13 +32,15 @@ $copy = $isEn
         'switch_cs' => 'CZ',
         'switch_en' => 'EN',
         'skins_label' => 'skin',
-        'balance_heading' => 'balance / last %d days',
+        'balance_heading_closed' => 'balance / closed month: %s',
+        'balance_heading_fallback' => 'balance / last %d days',
         'work_heading' => 'work barometer / last %d days',
         'work_total' => 'total work time across all entries: %s',
         'no_work_data' => 'no work data yet.',
         'entries_label' => 'entries in range',
+        'period_label' => 'period',
         'work_total_label' => 'total work time',
-        'balance_ratio_label' => 'balance ratio',
+        'balance_ratio_label' => 'recovery ratio',
         'status_label' => 'status',
         'empty_month' => '—',
         'reflections' => 'Reflections',
@@ -53,13 +62,15 @@ $copy = $isEn
         'switch_cs' => 'CZ',
         'switch_en' => 'EN',
         'skins_label' => 'skin',
-        'balance_heading' => 'balance / last %d days',
+        'balance_heading_closed' => 'balance / uzavřený měsíc: %s',
+        'balance_heading_fallback' => 'balance / last %d days',
         'work_heading' => 'work barometer / last %d days',
         'work_total' => 'celkový pracovní čas napříč všemi entries: %s',
         'no_work_data' => 'zatím žádná work data.',
         'entries_label' => 'entries v období',
+        'period_label' => 'období',
         'work_total_label' => 'celkový pracovní čas',
-        'balance_ratio_label' => 'balance ratio',
+        'balance_ratio_label' => 'recovery ratio',
         'status_label' => 'status',
         'empty_month' => '—',
         'reflections' => 'Reflexe',
@@ -116,7 +127,15 @@ $copy = $isEn
                 <div class="log-summary-grid">
                     <?php if ($balance): ?>
                         <section class="log-section">
-                            <h2><?php echo e(sprintf($copy['balance_heading'], (int) $balanceDays)); ?></h2>
+                            <h2>
+                                <?php
+                                echo e(
+                                    $balancePeriodLabel
+                                        ? sprintf($copy['balance_heading_closed'], $balancePeriodLabel)
+                                        : sprintf($copy['balance_heading_fallback'], (int) $balanceDays)
+                                );
+                                ?>
+                            </h2>
 
                             <table class="stats-table">
                                 <colgroup>
@@ -124,6 +143,13 @@ $copy = $isEn
                                     <col>
                                 </colgroup>
                                 <tbody>
+                                    <?php if ($balancePeriodLabel): ?>
+                                        <tr>
+                                            <td><?php echo e($copy['period_label']); ?></td>
+                                            <td><?php echo e($balancePeriodLabel); ?></td>
+                                        </tr>
+                                    <?php endif; ?>
+
                                     <tr>
                                         <td><?php echo e($copy['entries_label']); ?></td>
                                         <td><?php echo e((string) $balance['entry_count']); ?></td>
@@ -134,16 +160,16 @@ $copy = $isEn
                                     </tr>
                                     <tr>
                                         <td><?php echo e($copy['balance_ratio_label']); ?></td>
-                                        <td><?php echo e($balance['balance_ratio_label']); ?></td>
+                                        <td><?php echo e($balance['display_ratio_label'] ?? $balance['balance_ratio_label']); ?></td>
                                     </tr>
                                     <tr class="therm-row">
                                         <td colspan="2">
-                                            <span class="therm-bar"><?php echo e($balance['balance_bar']); ?></span>
+                                            <span class="therm-bar"><?php echo e($balance['display_bar'] ?? $balance['balance_bar']); ?></span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><?php echo e($copy['status_label']); ?></td>
-                                        <td><?php echo e($balance['balance_status']); ?></td>
+                                        <td><?php echo e($balance['display_status'] ?? $balance['balance_status']); ?></td>
                                     </tr>
                                 </tbody>
                             </table>
