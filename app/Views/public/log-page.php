@@ -2,6 +2,52 @@
 $monthGroups = $month_groups ?? [];
 $workMix = $work_mix ?? ['days' => 180, 'total_hours_label' => '0 h', 'rows' => []];
 $balance = $balance ?? null;
+$scientific = $scientific ?? [
+    'has_data' => false,
+    'questionnaire_entry_count' => 0,
+    'copsoq_workload_mean_label' => '—',
+    'nfr_mean_label' => '—',
+    'recovery_experience_mean_label' => '—',
+    'derived_balance_percent_label' => '—',
+    'derived_balance_bar' => '····················',
+    'derived_status' => 'no data',
+];
+$scientificTrend12 = $scientific_trend_12 ?? [
+    'chart_rows' => [],
+    'labels_row' => '',
+];
+
+$trendChartRowsDisplay = [];
+$trendLabelsDisplay = '';
+
+if (!empty($scientificTrend12['chart_rows'])) {
+    foreach ($scientificTrend12['chart_rows'] as $row) {
+        $cells = preg_split('/\s+/', trim((string) $row));
+        $displayCells = [];
+
+        foreach ($cells as $cell) {
+            if ($cell === '█') {
+                $displayCells[] = ' █ ';
+            } else {
+                $displayCells[] = ' · ';
+            }
+        }
+
+        $trendChartRowsDisplay[] = implode('', $displayCells);
+    }
+}
+
+if (!empty($scientificTrend12['labels_row'])) {
+    $labels = preg_split('/\s+/', trim((string) $scientificTrend12['labels_row']));
+    $labelCells = [];
+
+    foreach ($labels as $label) {
+        $labelCells[] = str_pad($label, 3, ' ', STR_PAD_BOTH);
+    }
+
+    $trendLabelsDisplay = implode('', $labelCells);
+}
+
 $balanceDays = $balance_days ?? 30;
 $workMixDays = $work_mix_days ?? 180;
 
@@ -34,13 +80,23 @@ $copy = $isEn
         'skins_label' => 'skin',
         'balance_heading_closed' => 'balance / closed month: %s',
         'balance_heading_fallback' => 'balance / last %d days',
+        'scientific_heading_closed' => 'COPSOQ III + NFR + Recovery Experience / closed month: %s',
+        'scientific_heading_fallback' => 'COPSOQ III + NFR + Recovery Experience / last %d days',
+        'trend_heading' => 'balance / last 12 closed months',
         'work_heading' => 'work barometer / last %d days',
         'work_total' => 'total work time across all entries: %s',
         'no_work_data' => 'no work data yet.',
+        'no_scientific_data' => 'no questionnaire data yet.',
+        'no_trend_data' => 'no trend data yet.',
         'entries_label' => 'entries in range',
+        'questionnaire_entries_label' => 'questionnaire entries',
         'period_label' => 'period',
         'work_total_label' => 'total work time',
         'balance_ratio_label' => 'recovery ratio',
+        'scientific_balance_label' => 'derived balance',
+        'copsoq_label' => 'copsoq workload',
+        'nfr_label' => 'nfr fatigue',
+        'recovery_experience_label' => 'recovery experience',
         'status_label' => 'status',
         'empty_month' => '—',
         'reflections' => 'Reflections',
@@ -64,13 +120,23 @@ $copy = $isEn
         'skins_label' => 'skin',
         'balance_heading_closed' => 'balance / uzavřený měsíc: %s',
         'balance_heading_fallback' => 'balance / last %d days',
+        'scientific_heading_closed' => 'COPSOQ III + NFR + Recovery Experience / uzavřený měsíc: %s',
+        'scientific_heading_fallback' => 'COPSOQ III + NFR + Recovery Experience / last %d days',
+        'trend_heading' => 'balance / posledních 12 uzavřených měsíců',
         'work_heading' => 'work barometer / last %d days',
         'work_total' => 'celkový pracovní čas napříč všemi entries: %s',
         'no_work_data' => 'zatím žádná work data.',
+        'no_scientific_data' => 'zatím žádná dotazníková data.',
+        'no_trend_data' => 'zatím žádná trendová data.',
         'entries_label' => 'entries v období',
+        'questionnaire_entries_label' => 'dotazníkové entries',
         'period_label' => 'období',
         'work_total_label' => 'celkový pracovní čas',
         'balance_ratio_label' => 'recovery ratio',
+        'scientific_balance_label' => 'odvozená balance',
+        'copsoq_label' => 'copsoq workload',
+        'nfr_label' => 'nfr fatigue',
+        'recovery_experience_label' => 'recovery experience',
         'status_label' => 'status',
         'empty_month' => '—',
         'reflections' => 'Reflexe',
@@ -175,6 +241,75 @@ $copy = $isEn
                             </table>
                         </section>
                     <?php endif; ?>
+
+                    <section class="log-section">
+                        <h2>
+                            <?php
+                            echo e(
+                                $balancePeriodLabel
+                                    ? sprintf($copy['scientific_heading_closed'], $balancePeriodLabel)
+                                    : sprintf($copy['scientific_heading_fallback'], (int) $balanceDays)
+                            );
+                            ?>
+                        </h2>
+
+                        <?php if (empty($scientific['has_data'])): ?>
+                            <p><?php echo e($copy['no_scientific_data']); ?></p>
+                        <?php else: ?>
+                            <table class="stats-table">
+                                <colgroup>
+                                    <col>
+                                    <col>
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td><?php echo e($copy['questionnaire_entries_label']); ?></td>
+                                        <td><?php echo e((string) $scientific['questionnaire_entry_count']); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td><?php echo e($copy['copsoq_label']); ?></td>
+                                        <td><?php echo e($scientific['copsoq_workload_mean_label']); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td><?php echo e($copy['nfr_label']); ?></td>
+                                        <td><?php echo e($scientific['nfr_mean_label']); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td><?php echo e($copy['recovery_experience_label']); ?></td>
+                                        <td><?php echo e($scientific['recovery_experience_mean_label']); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td><?php echo e($copy['scientific_balance_label']); ?></td>
+                                        <td><?php echo e($scientific['derived_balance_percent_label']); ?></td>
+                                    </tr>
+                                    <tr class="therm-row">
+                                        <td colspan="2">
+                                            <span class="therm-bar"><?php echo e($scientific['derived_balance_bar']); ?></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><?php echo e($copy['status_label']); ?></td>
+                                        <td><?php echo e($scientific['derived_status']); ?></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        <?php endif; ?>
+                    </section>
+
+                    <section class="log-section">
+                        <h2><?php echo e($copy['trend_heading']); ?></h2>
+
+                        <?php if (empty($scientificTrend12['chart_rows'])): ?>
+                            <p><?php echo e($copy['no_trend_data']); ?></p>
+                        <?php else: ?>
+                            <pre class="ascii-block ascii-chart"><?php
+foreach ($trendChartRowsDisplay as $row) {
+    echo e($row) . "\n";
+}
+echo e($trendLabelsDisplay);
+?></pre>
+<?php endif; ?>
+                    </section>
 
                     <section class="log-section">
                         <h2><?php echo e(sprintf($copy['work_heading'], (int) $workMixDays)); ?></h2>

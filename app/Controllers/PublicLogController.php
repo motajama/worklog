@@ -66,6 +66,12 @@ class PublicLogController
         $groupedEntries = self::groupByMonth($entries);
         $summary = self::buildSummary($entries, 180);
         $balance30 = BalanceService::rangeSummary(30, 'public');
+        $scientific30 = BalanceService::questionnaireSummary(
+            $balance30['date_from'],
+            $balance30['date_to'],
+            'public'
+        );
+        $scientificTrend12 = BalanceService::questionnaireTrendLast12Months('public');
 
         View::render('pages/home', [
             'page_title' => t('page.home_title'),
@@ -73,6 +79,8 @@ class PublicLogController
             'reflections_by_entry' => $reflectionsByEntry,
             'summary' => $summary,
             'balance_30' => $balance30,
+            'scientific_30' => $scientific30,
+            'scientific_trend_12' => $scientificTrend12,
         ]);
     }
 

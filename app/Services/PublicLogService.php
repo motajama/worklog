@@ -66,13 +66,23 @@ class PublicLogService
             }
         }
 
+        $balance = BalanceService::lastClosedMonthSummary(null);
+        $scientific = BalanceService::questionnaireSummary(
+            $balance['date_from'],
+            $balance['date_to'],
+            null
+        );
+        $scientificTrend12 = BalanceService::approximateTrendLast12Months(null);
+
         return [
             'month_groups' => self::groupByMonth($entries, $reflectionsByEntry),
             'work_mix' => self::workMix($workMixDays),
 
             // public log: balance vždy za poslední uzavřený měsíc,
             // stále ale z celého datasetu (public + private + internal)
-            'balance' => BalanceService::lastClosedMonthSummary(null),
+            'balance' => $balance,
+            'scientific' => $scientific,
+            'scientific_trend_12' => $scientificTrend12,
 
             'balance_days' => $balanceDays,
             'work_mix_days' => $workMixDays,

@@ -16,6 +16,10 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     margin: 0;
     font-family: var(--font-body, sans-serif);
@@ -95,6 +99,7 @@ body {
 .log-right {
     width: var(--panel-width);
     min-height: 1px;
+    scroll-margin-top: 1rem;
 }
 
 .log-right-inner {
@@ -215,6 +220,15 @@ body {
     display: block;
     font-family: var(--font-mono, monospace);
     white-space: pre-wrap;
+}
+
+.ascii-block {
+    margin: 0;
+    font-family: var(--font-mono, monospace);
+    line-height: 1.45;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    font-variant-ligatures: none;
 }
 
 .month-block {
@@ -376,6 +390,7 @@ body {
 
     .log-right {
         width: auto;
+        scroll-margin-top: 0.75rem;
     }
 
     .log-right-inner {
@@ -410,4 +425,16 @@ body {
     .work-table td {
         font-size: 0.88rem;
     }
+
+    .ascii-block {
+        font-size: 0.84rem;
+    }
+}
+
+.ascii-chart {
+    white-space: pre;
+    line-height: 1.2;
+    letter-spacing: 0;
+    font-variant-ligatures: none;
+    overflow-x: auto;
 }

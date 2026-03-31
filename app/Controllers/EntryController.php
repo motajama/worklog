@@ -56,12 +56,18 @@ class EntryController
                 entry_date, slug, entry_type, title, body, public_text, private_notes, minutes,
                 category_id, project_id, visibility, locale, is_invisible_work,
                 workload_override, recovery_override,
+                copsoq_quantitative_demands, copsoq_work_pace, copsoq_cognitive_demands, copsoq_low_control,
+                nfr_exhausted, nfr_detach_difficulty, nfr_need_long_recovery, nfr_overload,
+                recovery_detachment, recovery_relaxation, recovery_mastery, recovery_control,
                 what_happened, why_it_matters, my_take, next_time,
                 allow_reflections
             ) VALUES (
                 :entry_date, :slug, :entry_type, :title, :body, :public_text, :private_notes, :minutes,
                 :category_id, :project_id, :visibility, :locale, :is_invisible_work,
                 :workload_override, :recovery_override,
+                :copsoq_quantitative_demands, :copsoq_work_pace, :copsoq_cognitive_demands, :copsoq_low_control,
+                :nfr_exhausted, :nfr_detach_difficulty, :nfr_need_long_recovery, :nfr_overload,
+                :recovery_detachment, :recovery_relaxation, :recovery_mastery, :recovery_control,
                 :what_happened, :why_it_matters, :my_take, :next_time,
                 :allow_reflections
             )',
@@ -132,6 +138,18 @@ class EntryController
                 is_invisible_work = :is_invisible_work,
                 workload_override = :workload_override,
                 recovery_override = :recovery_override,
+                copsoq_quantitative_demands = :copsoq_quantitative_demands,
+                copsoq_work_pace = :copsoq_work_pace,
+                copsoq_cognitive_demands = :copsoq_cognitive_demands,
+                copsoq_low_control = :copsoq_low_control,
+                nfr_exhausted = :nfr_exhausted,
+                nfr_detach_difficulty = :nfr_detach_difficulty,
+                nfr_need_long_recovery = :nfr_need_long_recovery,
+                nfr_overload = :nfr_overload,
+                recovery_detachment = :recovery_detachment,
+                recovery_relaxation = :recovery_relaxation,
+                recovery_mastery = :recovery_mastery,
+                recovery_control = :recovery_control,
                 what_happened = :what_happened,
                 why_it_matters = :why_it_matters,
                 my_take = :my_take,
@@ -306,9 +324,32 @@ class EntryController
             $nextTime = $nextTime !== '' ? $nextTime : null;
         }
 
+        $questionnaireValues = [];
+        foreach (self::questionnaireFieldLabels() as $field => $label) {
+            $raw = trim((string) ($input[$field] ?? ''));
+
+            if ($raw === '') {
+                $questionnaireValues[$field] = null;
+                continue;
+            }
+
+            if (!ctype_digit($raw)) {
+                $errors[] = $label . ': odpověď musí být 0–4.';
+                continue;
+            }
+
+            $value = (int) $raw;
+            if ($value < 0 || $value > 4) {
+                $errors[] = $label . ': odpověď musí být 0–4.';
+                continue;
+            }
+
+            $questionnaireValues[$field] = $value;
+        }
+
         return [
             'errors' => $errors,
-            'values' => [
+            'values' => array_merge([
                 'entry_date' => $entryDate,
                 'slug' => $slug,
                 'entry_type' => $entryType,
@@ -329,7 +370,27 @@ class EntryController
                 'my_take' => $myTake,
                 'next_time' => $nextTime,
                 'allow_reflections' => $allowReflections,
-            ],
+            ], $questionnaireValues),
+        ];
+    }
+
+    protected static function questionnaireFieldLabels(): array
+    {
+        return [
+            'copsoq_quantitative_demands' => 'COPSOQ: množství práce',
+            'copsoq_work_pace' => 'COPSOQ: pracovní tempo',
+            'copsoq_cognitive_demands' => 'COPSOQ: kognitivní nároky',
+            'copsoq_low_control' => 'COPSOQ: nízká kontrola',
+
+            'nfr_exhausted' => 'NFR: vyčerpání',
+            'nfr_detach_difficulty' => 'NFR: potíž se odpoutat',
+            'nfr_need_long_recovery' => 'NFR: dlouhé zotavení',
+            'nfr_overload' => 'NFR: přetížení',
+
+            'recovery_detachment' => 'Recovery: odpoutání',
+            'recovery_relaxation' => 'Recovery: relaxace',
+            'recovery_mastery' => 'Recovery: mastery',
+            'recovery_control' => 'Recovery: kontrola času',
         ];
     }
 
@@ -360,6 +421,22 @@ class EntryController
             'is_invisible_work' => 0,
             'workload_override' => '',
             'recovery_override' => '',
+
+            'copsoq_quantitative_demands' => '',
+            'copsoq_work_pace' => '',
+            'copsoq_cognitive_demands' => '',
+            'copsoq_low_control' => '',
+
+            'nfr_exhausted' => '',
+            'nfr_detach_difficulty' => '',
+            'nfr_need_long_recovery' => '',
+            'nfr_overload' => '',
+
+            'recovery_detachment' => '',
+            'recovery_relaxation' => '',
+            'recovery_mastery' => '',
+            'recovery_control' => '',
+
             'what_happened' => '',
             'why_it_matters' => '',
             'my_take' => '',

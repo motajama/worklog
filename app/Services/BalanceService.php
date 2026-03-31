@@ -8,6 +8,27 @@ use DateTimeImmutable;
 
 class BalanceService
 {
+    protected const COPSOQ_FIELDS = [
+        'copsoq_quantitative_demands',
+        'copsoq_work_pace',
+        'copsoq_cognitive_demands',
+        'copsoq_low_control',
+    ];
+
+    protected const NFR_FIELDS = [
+        'nfr_exhausted',
+        'nfr_detach_difficulty',
+        'nfr_need_long_recovery',
+        'nfr_overload',
+    ];
+
+    protected const RECOVERY_EXPERIENCE_FIELDS = [
+        'recovery_detachment',
+        'recovery_relaxation',
+        'recovery_mastery',
+        'recovery_control',
+    ];
+
     public static function rangeSummary(int $days, ?string $visibility = null): array
     {
         $days = max(1, $days);
@@ -148,11 +169,9 @@ class BalanceService
             'required_active_recovery_minutes' => $requiredActiveRecoveryMinutes,
             'required_active_recovery_hours_label' => self::formatHours($requiredActiveRecoveryMinutes),
 
-            // původní "softened" ratio necháváme kvůli kompatibilitě
             'balance_ratio_raw' => $balanceRatio,
             'balance_ratio_label' => number_format($balanceRatio, 2, '.', ''),
 
-            // tohle je smysluplnější veřejný ukazatel
             'display_ratio_raw' => $activeRecoveryRatio,
             'display_ratio_label' => number_format($activeRecoveryRatio, 2, '.', ''),
             'display_status' => self::statusFromRatio($activeRecoveryRatio),
@@ -168,6 +187,218 @@ class BalanceService
             'balance_bar' => self::ratioBar($balanceRatio),
             'active_recovery_bar' => self::ratioBar($activeRecoveryRatio),
         ];
+    }
+
+    public static function questionnaireSummary(string $dateFrom, string $dateTo, ?string $visibility = null): array
+    {
+        $fields = array_merge(
+            ['id', 'entry_date'],
+            self::COPSOQ_FIELDS,
+            self::NFR_FIELDS,
+            self::RECOVERY_EXPERIENCE_FIELDS
+        );
+
+        $sql = 'SELECT ' . implode(', ', $fields) . ' FROM entries WHERE entry_date BETWEEN :date_from AND :date_to';
+        $params = [
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+        ];
+
+        if ($visibility !== null) {
+            $sql .= ' AND visibility = :visibility';
+            $params['visibility'] = $visibility;
+        }
+
+        $sql .= ' ORDER BY entry_date ASC, id ASC';
+
+        $rows = DB::selectAll($sql, $params);
+
+        $copsoqAverages = [];
+        $nfrAverages = [];
+        $recoveryAverages = [];
+
+        $questionnaireEntryCount = 0;
+
+        foreach ($rows as $row) {
+            $copsoq = self::completeScaleAverage($row, self::COPSOQ_FIELDS);
+            $nfr = self::completeScaleAverage($row, self::NFR_FIELDS);
+            $recovery = self::completeScaleAverage($row, self::RECOVERY_EXPERIENCE_FIELDS);
+
+            if ($copsoq !== null || $nfr !== null || $recovery !== null) {
+                $questionnaireEntryCount++;
+            }
+
+            if ($copsoq !== null) {
+                $copsoqAverages[] = $copsoq;
+            }
+
+            if ($nfr !== null) {
+                $nfrAverages[] = $nfr;
+            }
+
+            if ($recovery !== null) {
+                $recoveryAverages[] = $recovery;
+            }
+        }
+
+        $copsoqMean = self::mean($copsoqAverages);
+        $nfrMean = self::mean($nfrAverages);
+        $recoveryMean = self::mean($recoveryAverages);
+
+        $hasCompleteComposite = $copsoqMean !== null && $nfrMean !== null && $recoveryMean !== null;
+
+        $derivedRaw = $hasCompleteComposite
+            ? $recoveryMean - (($copsoqMean + $nfrMean) / 2)
+            : null;
+
+        $derivedPercent = $derivedRaw !== null
+            ? (int) round(self::clamp((($derivedRaw + 4.0) / 8.0) * 100.0, 0.0, 100.0))
+            : 0;
+
+        return [
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+            'entry_count' => count($rows),
+            'questionnaire_entry_count' => $questionnaireEntryCount,
+            'has_data' => $questionnaireEntryCount > 0,
+            'has_complete_composite' => $hasCompleteComposite,
+
+            'copsoq_workload_mean_raw' => $copsoqMean,
+            'copsoq_workload_mean_label' => self::scaleLabel($copsoqMean),
+
+            'nfr_mean_raw' => $nfrMean,
+            'nfr_mean_label' => self::scaleLabel($nfrMean),
+
+            'recovery_experience_mean_raw' => $recoveryMean,
+            'recovery_experience_mean_label' => self::scaleLabel($recoveryMean),
+
+            'derived_balance_raw' => $derivedRaw,
+            'derived_balance_label' => $derivedRaw !== null ? number_format($derivedRaw, 2, '.', '') : '—',
+
+            'derived_balance_percent' => $derivedPercent,
+            'derived_balance_percent_label' => $derivedRaw !== null ? $derivedPercent . '/100' : '—',
+            'derived_balance_bar' => self::percentBar($derivedPercent),
+
+            'derived_status' => self::scientificStatus($derivedPercent),
+        ];
+    }
+
+    public static function questionnaireTrendLast12Months(?string $visibility = null): array
+    {
+        $today = new DateTimeImmutable('today');
+        $lastDayCurrentMonth = new DateTimeImmutable('last day of this month');
+
+        $latestMonth = $today->format('Y-m-d') === $lastDayCurrentMonth->format('Y-m-d')
+            ? $today->modify('first day of this month')
+            : $today->modify('first day of last month');
+
+        $series = [];
+
+        for ($i = 11; $i >= 0; $i--) {
+            $month = $latestMonth->modify('-' . $i . ' months');
+            $dateFrom = $month->format('Y-m-01');
+            $dateTo = $month->format('Y-m-t');
+
+            $summary = self::questionnaireSummary($dateFrom, $dateTo, $visibility);
+
+            $series[] = [
+                'label' => $month->format('m'),
+                'year' => $month->format('Y'),
+                'value' => (int) ($summary['derived_balance_percent'] ?? 0),
+            ];
+        }
+
+        $values = array_map(
+            static fn(array $row): int => (int) $row['value'],
+            $series
+        );
+
+        return [
+            'series' => $series,
+            'chart_rows' => self::verticalChartRows($values, 10),
+            'labels_row' => implode(' ', array_map(
+                static fn(array $row): string => $row['label'],
+                $series
+            )),
+        ];
+    }
+
+    protected static function completeScaleAverage(array $row, array $fields): ?float
+    {
+        $values = [];
+
+        foreach ($fields as $field) {
+            if (!array_key_exists($field, $row) || $row[$field] === null || $row[$field] === '') {
+                return null;
+            }
+
+            $values[] = (int) $row[$field];
+        }
+
+        return self::mean($values);
+    }
+
+    protected static function mean(array $values): ?float
+    {
+        if ($values === []) {
+            return null;
+        }
+
+        return array_sum($values) / count($values);
+    }
+
+    protected static function scaleLabel(?float $value): string
+    {
+        if ($value === null) {
+            return '—';
+        }
+
+        return number_format($value, 2, '.', '') . ' / 4';
+    }
+
+    protected static function scientificStatus(int $percent): string
+    {
+        if ($percent >= 70) {
+            return 'resilient';
+        }
+
+        if ($percent >= 55) {
+            return 'stable';
+        }
+
+        if ($percent >= 45) {
+            return 'mixed';
+        }
+
+        if ($percent >= 30) {
+            return 'strained';
+        }
+
+        return 'high strain';
+    }
+
+    protected static function verticalChartRows(array $values, int $height = 10): array
+    {
+        $rows = [];
+
+        for ($level = $height; $level >= 1; $level--) {
+            $line = [];
+
+            foreach ($values as $value) {
+                $filledHeight = (int) round(($value / 100) * $height);
+                $filledHeight = max(0, min($height, $filledHeight));
+                $line[] = $filledHeight >= $level ? '█' : '·';
+            }
+
+            $rows[] = implode(' ', $line);
+        }
+
+        return $rows;
+    }
+
+    protected static function clamp(float $value, float $min, float $max): float
+    {
+        return max($min, min($max, $value));
     }
 
     protected static function statusFromRatio(float $ratio): string
@@ -200,6 +431,15 @@ class BalanceService
         return str_repeat('█', $filled) . str_repeat('·', $width - $filled);
     }
 
+    protected static function percentBar(int $percent, int $width = 20): string
+    {
+        $clamped = max(0, min(100, $percent));
+        $filled = (int) round(($clamped / 100) * $width);
+        $filled = max(0, min($width, $filled));
+
+        return str_repeat('█', $filled) . str_repeat('·', $width - $filled);
+    }
+
     protected static function formatHours(int $minutes): string
     {
         if ($minutes <= 0) {
@@ -221,6 +461,47 @@ class BalanceService
         $absolute = abs($minutes);
 
         return $sign . self::formatHours($absolute);
+    }
+
+    public static function approximateTrendLast12Months(?string $visibility = null): array
+    {
+        $today = new DateTimeImmutable('today');
+        $lastDayCurrentMonth = new DateTimeImmutable('last day of this month');
+
+        $latestMonth = $today->format('Y-m-d') === $lastDayCurrentMonth->format('Y-m-d')
+            ? $today->modify('first day of this month')
+            : $today->modify('first day of last month');
+
+        $series = [];
+
+        for ($i = 11; $i >= 0; $i--) {
+            $month = $latestMonth->modify('-' . $i . ' months');
+            $dateFrom = $month->format('Y-m-01');
+            $dateTo = $month->format('Y-m-t');
+
+            $summary = self::summaryForPeriod($dateFrom, $dateTo, $visibility);
+            $value = (int) round(max(0, min(100, ($summary['display_ratio_raw'] ?? 0) * 100)));
+
+            $series[] = [
+                'label' => $month->format('m'),
+                'year' => $month->format('Y'),
+                'value' => $value,
+            ];
+        }
+
+        $values = array_map(
+            static fn(array $row): int => (int) $row['value'],
+            $series
+        );
+
+        return [
+            'series' => $series,
+            'chart_rows' => self::verticalChartRows($values, 10),
+            'labels_row' => implode(' ', array_map(
+                static fn(array $row): string => $row['label'],
+                $series
+            )),
+        ];
     }
 
     protected static function monthLabel(DateTimeImmutable $date, string $locale): string

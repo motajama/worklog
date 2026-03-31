@@ -11,6 +11,20 @@ $summaryData = $summary ?? [
     'type_mix' => [],
 ];
 $balance30 = $balance_30 ?? null;
+$scientific30 = $scientific_30 ?? [
+    'has_data' => false,
+    'questionnaire_entry_count' => 0,
+    'copsoq_workload_mean_label' => '—',
+    'nfr_mean_label' => '—',
+    'recovery_experience_mean_label' => '—',
+    'derived_balance_percent_label' => '—',
+    'derived_balance_bar' => '····················',
+    'derived_status' => 'no data',
+];
+$scientificTrend12 = $scientific_trend_12 ?? [
+    'chart_rows' => [],
+    'labels_row' => '',
+];
 ?>
 
 <section class="page-section public-log-page">
@@ -37,6 +51,38 @@ echo e('status                 ' . $balance30['balance_status']) . "\n";
 ?></pre>
         </article>
     <?php endif; ?>
+
+    <article class="card ascii-card">
+        <h2>COPSOQ III + NFR + Recovery Experience / short module / last 30 days</h2>
+
+        <?php if (!$scientific30['has_data']): ?>
+            <div class="muted-line">Zatím žádná vyplněná metodická data.</div>
+        <?php else: ?>
+            <pre class="ascii-block"><?php
+echo e('questionnaire entries  ' . $scientific30['questionnaire_entry_count']) . "\n";
+echo e('copsoq workload        ' . $scientific30['copsoq_workload_mean_label']) . "\n";
+echo e('nfr fatigue            ' . $scientific30['nfr_mean_label']) . "\n";
+echo e('recovery experience    ' . $scientific30['recovery_experience_mean_label']) . "\n";
+echo e('derived balance        ' . $scientific30['derived_balance_percent_label'] . '  ' . $scientific30['derived_balance_bar']) . "\n";
+echo e('status                 ' . $scientific30['derived_status']) . "\n";
+?></pre>
+        <?php endif; ?>
+    </article>
+
+    <article class="card ascii-card">
+        <h2>balance / last 12 closed months / COPSOQ+NFR+Recovery</h2>
+
+        <?php if (empty($scientificTrend12['chart_rows'])): ?>
+            <div class="muted-line">Zatím žádná data pro trend.</div>
+        <?php else: ?>
+            <pre class="ascii-block"><?php
+foreach ($scientificTrend12['chart_rows'] as $row) {
+    echo e($row) . "\n";
+}
+echo e($scientificTrend12['labels_row']);
+?></pre>
+        <?php endif; ?>
+    </article>
 
     <section class="ascii-summary">
         <article class="card ascii-card">
