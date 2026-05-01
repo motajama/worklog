@@ -81,11 +81,13 @@ $copy = $isEn
         'switch_cs' => 'CZ',
         'switch_en' => 'EN',
         'skins_label' => 'skin',
-        'balance_heading_closed' => 'balance / closed month: %s',
-        'balance_heading_fallback' => 'balance / last %d days',
-        'scientific_heading_closed' => 'quick balance check / closed month: %s',
-        'scientific_heading_fallback' => 'quick balance check / last %d days',
-        'trend_heading' => 'quick balance / last 12 closed months',
+        'balance_heading_closed' => 'recovery balance / closed month: %s',
+        'balance_heading_fallback' => 'recovery balance / last %d days',
+        'balance_tooltip' => 'What this means: this compares how much demanding work was logged with how much active recovery was logged. Harder work counts a bit more, and restorative time counts as recovery. Around 1.00 means recovery roughly matched the need. Below 1.00 suggests a recovery debt; above 1.00 suggests a surplus.',
+        'scientific_heading_closed' => 'quick self-check / closed month: %s',
+        'scientific_heading_fallback' => 'quick self-check / last %d days',
+        'scientific_tooltip' => 'What this means: this is a quick personal check-in. It asks how heavy work felt, how tired you felt, and how well you recovered. The score is not a medical measure; it is a simple signal for noticing patterns over time. Higher is better.',
+        'trend_heading' => 'recovery ratio / last 12 closed months',
         'work_heading' => 'work barometer / last %d days',
         'work_total' => 'total work time across all entries: %s',
         'no_work_data' => 'no work data yet.',
@@ -121,11 +123,13 @@ $copy = $isEn
         'switch_cs' => 'CZ',
         'switch_en' => 'EN',
         'skins_label' => 'skin',
-        'balance_heading_closed' => 'balance / uzavřený měsíc: %s',
-        'balance_heading_fallback' => 'balance / last %d days',
-        'scientific_heading_closed' => 'rychlý balance check / uzavřený měsíc: %s',
-        'scientific_heading_fallback' => 'rychlý balance check / posledních %d dní',
-        'trend_heading' => 'rychlá balance / posledních 12 uzavřených měsíců',
+        'balance_heading_closed' => 'duševní hygiena (recovery ratio) / uzavřený měsíc: %s',
+        'balance_heading_fallback' => 'duševní hygiena (recovery ratio) / posledních %d dní',
+        'balance_tooltip' => 'Co to znamená: srovnává se, kolik náročné práce je zapsané a kolik aktivní obnovy proti tomu proběhlo. Náročnější práce má větší váhu, regenerační čas se počítá jako obnova. Hodnota kolem 1.00 znamená, že obnova zhruba odpovídá potřebě. Pod 1.00 vzniká dluh, nad 1.00 je rezerva.',
+        'scientific_heading_closed' => 'rychlý self-check / uzavřený měsíc: %s',
+        'scientific_heading_fallback' => 'rychlý self-check / posledních %d dní',
+        'scientific_tooltip' => 'Co to znamená: jde o krátké osobní zastavení. Ptá se, jak silný byl pracovní tlak, jaká byla únava a jak dobrá byla obnova. Není to lékařské měření, jen jednoduchý signál pro sledování vzorců v čase. Vyšší číslo je lepší.',
+        'trend_heading' => 'recovery ratio / posledních 12 uzavřených měsíců',
         'work_heading' => 'work barometer / last %d days',
         'work_total' => 'celkový pracovní čas napříč všemi entries: %s',
         'no_work_data' => 'zatím žádná work data.',
@@ -212,6 +216,10 @@ $footerHtml = $publicLogDisplay['footer_html'] ?? null;
                                         : sprintf($copy['balance_heading_fallback'], (int) $balanceDays)
                                 );
                                 ?>
+                                <span class="heading-info" tabindex="0" aria-label="<?php echo e($copy['balance_tooltip']); ?>">
+                                    [i]
+                                    <span class="heading-info-text" role="tooltip"><?php echo e($copy['balance_tooltip']); ?></span>
+                                </span>
                             </h2>
 
                             <table class="stats-table">
@@ -264,6 +272,10 @@ $footerHtml = $publicLogDisplay['footer_html'] ?? null;
                                     : sprintf($copy['scientific_heading_fallback'], (int) $balanceDays)
                             );
                             ?>
+                            <span class="heading-info" tabindex="0" aria-label="<?php echo e($copy['scientific_tooltip']); ?>">
+                                [i]
+                                <span class="heading-info-text" role="tooltip"><?php echo e($copy['scientific_tooltip']); ?></span>
+                            </span>
                         </h2>
 
                         <?php if (empty($scientific['has_data'])): ?>
