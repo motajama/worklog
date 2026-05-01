@@ -132,25 +132,29 @@ app/
 database/
   schema.sql
   seed.sql
-public/
-  index.php
-  log.php
-  assets/
-    css/
-      base.css
-      log.css
-      skins/
+assets/
+  css/
+    base.css
+    log.css
+    skins/
+index.php
+log.php
+.htaccess
+config.example.php
 README.md
 ```
 
 Notes:
 
-- `public/index.php` is the private app front controller
-- `public/log.php` is the public log front controller
+- `index.php` is the private app front controller
+- `log.php` is the public log front controller
+- `app/bootstrap.php` contains the shared bootstrap/autoload path
 - `database/schema.sql` contains the schema
 - `database/seed.sql` contains starter content and defaults
 - `app/Views/public/log-page.php` renders the public log
-- `public/assets/css/skins/` contains skin files
+- `assets/css/skins/` contains skin files
+- `config.php` or `private/config.php` may override public defaults with deployment-specific settings and secrets; these files are ignored by git
+- `.htaccess` blocks direct web access to `app/`, `database/`, `private/`, `config.php`, and `.env`
 
 ---
 
@@ -177,7 +181,7 @@ sqlite3 database/worklog.sqlite < database/seed.sql
 Then start the local server:
 
 ```bash
-php -S localhost:8000 -t public
+php -S localhost:8000
 ```
 
 Open:
@@ -195,10 +199,11 @@ http://localhost:8000/log.php
 ### MySQL / MariaDB setup
 
 1. Create an empty database.
-2. Import `database/schema.sql`.
-3. Import `database/seed.sql`.
-4. Update the database credentials in the project configuration used by your install.
-5. Start the app through your web server or the PHP dev server.
+2. Import `database/schema.mysql.sql`.
+3. Import `database/seed.mysql.sql`.
+4. Copy `config.example.php` to `config.php` or `private/config.php`.
+5. Update the database credentials in that ignored config file.
+6. Start the app through your web server or the PHP dev server.
 
 If you are using phpMyAdmin, open the SQL tab and run the contents of `schema.sql`, then `seed.sql`.
 
@@ -283,13 +288,13 @@ These fields accept HTML.
 Main files:
 
 - `app/Views/public/log-page.php`
-- `public/assets/css/log.css`
+- `assets/css/log.css`
 
 ### Change the private app layout
 
 Main files:
 
-- `public/assets/css/base.css`
+- `assets/css/base.css`
 - `app/Views/...`
 
 ### Change routes
@@ -326,7 +331,7 @@ The project uses CSS skins.
 ### Where skins live
 
 ```text
-public/assets/css/skins/
+assets/css/skins/
 ```
 
 Examples:
@@ -421,7 +426,7 @@ a {
 
 ### How to add a new skin
 
-1. Create a new CSS file in `public/assets/css/skins/`.
+1. Create a new CSS file in `assets/css/skins/`.
 2. Copy an existing skin.
 3. Change only variables and, if really necessary, a small number of overrides.
 4. Add the skin to any skin selector or skin list used by the app/public log.
@@ -437,36 +442,26 @@ Do not hard-code component colors and borders in multiple places unless they are
 
 ## How to deploy the web
 
-### Option A: proper web root to `public/` (recommended)
-
-This is the cleanest setup.
+### Root web deployment
 
 1. Upload the whole project to the server.
-2. Set the web root / document root to:
-
-```text
-public/
-```
-
-3. Create the database.
-4. Import:
-   - `database/schema.sql`
-   - `database/seed.sql`
-5. Configure database access.
-6. Make sure PHP sessions work.
-7. Open:
+2. Point the web server at the project root, where `index.php` and `log.php` live.
+3. Keep the included `.htaccess` active, or add equivalent server rules that block direct web access to:
+   - `app/`
+   - `database/`
+   - `private/`
+   - `config.php`
+   - `.env`
+4. Create the database.
+5. Import:
+   - `database/schema.mysql.sql`
+   - `database/seed.mysql.sql`
+6. Configure database access in ignored `config.php` or `private/config.php`.
+7. Make sure PHP sessions work.
+8. Open:
    - `/` for the intro page
    - `/login` for admin login
    - `/log.php` for the public log
-
-### Option B: shared hosting without nested public root
-
-If your hosting does not let you point the document root to `public/`, you have two choices:
-
-1. keep the public files in the web root and adjust bootstrap paths carefully
-2. or restructure deployment so only `public/` is exposed
-
-If possible, prefer exposing only `public/`. It is safer and cleaner.
 
 ### Apache / Nginx note
 
@@ -488,8 +483,9 @@ That means:
 - seed imported
 - document root correct
 - file paths correct
-- `public/log.php` accessible
+- `log.php` accessible
 - admin login changed from default password
+- direct requests to `app/`, `database/`, `private/`, `config.php`, and `.env` forbidden
 
 ---
 
@@ -543,4 +539,4 @@ Code: AGPL-3.0
 
 ## Status
 
-Early development, but version 1 now includes the full private/public split and a functioning public log workflow.
+Early development, but version 1 now includes the private admin workflow and a functioning public log.

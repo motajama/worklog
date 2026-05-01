@@ -12,7 +12,9 @@ INSERT INTO app_settings (setting_key, setting_value) VALUES
 ('recovery_multiplier', '0.35'),
 ('short_window_days', '7'),
 ('long_window_days', '30'),
-('allow_public_reflections', '1')
+('allow_public_reflections', '1'),
+('home_intro_html_cs', '<h2>Worklog</h2><p>Tato aplikace je soukromá. Veřejný log najdeš na <a href="log.php">log.php</a>.</p>'),
+('home_intro_html_en', '<h2>Worklog</h2><p>This application is private. Public log lives in <a href="log.php">log.php</a>.</p>')
 ON DUPLICATE KEY UPDATE
     setting_value = VALUES(setting_value);
 

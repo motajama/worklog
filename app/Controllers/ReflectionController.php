@@ -40,10 +40,11 @@ class ReflectionController
         $authorEmail = trim((string) ($_POST['author_email'] ?? ''));
         $body = trim((string) ($_POST['body'] ?? ''));
         $isAnonymous = isset($_POST['is_anonymous']) ? 1 : 0;
+        $returnUrl = self::returnUrl($entryId);
 
         if ($entryId <= 0) {
             flash('error', 'Chybí entry pro reflexi.');
-            redirect(route_url('home'));
+            redirect($returnUrl);
         }
 
         $entry = DB::selectOne(
@@ -56,17 +57,17 @@ class ReflectionController
 
         if (!$entry) {
             flash('error', 'Entry pro reflexi neexistuje.');
-            redirect(route_url('home'));
+            redirect($returnUrl);
         }
 
         if ($entry['visibility'] !== 'public' || $entry['entry_type'] !== 'fuckup' || (int) $entry['allow_reflections'] !== 1) {
             flash('error', 'K tomuhle entry teď nejde vložit reflexe.');
-            redirect(route_url('home'));
+            redirect($returnUrl);
         }
 
         if ($body === '') {
             flash('error', 'Reflexe nesmí být prázdná.');
-            redirect(route_url('home') . '#entry-' . $entryId);
+            redirect($returnUrl);
         }
 
         DB::execute(
@@ -87,7 +88,7 @@ class ReflectionController
         );
 
         flash('success', 'Reflexe byla odeslána ke schválení.');
-        redirect(route_url('home') . '#entry-' . $entryId);
+        redirect($returnUrl);
     }
 
     public static function approve(array $params): void
@@ -138,5 +139,27 @@ class ReflectionController
             'SELECT * FROM reflections WHERE id = :id LIMIT 1',
             ['id' => $id]
         );
+    }
+
+    protected static function returnUrl(int $entryId): string
+    {
+        $fallback = url('log.php');
+
+        if ($entryId > 0) {
+            $fallback .= '#entry-' . $entryId;
+        }
+
+        $returnUrl = trim((string) ($_POST['return_url'] ?? ''));
+
+        if ($returnUrl === '') {
+            return $fallback;
+        }
+
+        $parts = parse_url($returnUrl);
+        if ($parts === false || isset($parts['scheme']) || isset($parts['host'])) {
+            return $fallback;
+        }
+
+        return $returnUrl;
     }
 }

@@ -2,8 +2,12 @@
 /node_modules/
 /storage/logs/*
 !/storage/logs/.gitkeep
-/public/uploads/*
-!/public/uploads/.gitkeep
+/assets/uploads/*
+!/assets/uploads/.gitkeep
+/private/
+/database/*.sqlite
+/config.php
+.codex
 .env
 .DS_Store
 Thumbs.db

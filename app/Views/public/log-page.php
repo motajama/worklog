@@ -50,8 +50,11 @@ if (!empty($scientificTrend12['labels_row'])) {
 
 $balanceDays = $balance_days ?? 30;
 $workMixDays = $work_mix_days ?? 180;
+$publicLogConfig = config('app.public_log', []);
+$publicLogDisplay = $publicLogConfig['display'] ?? [];
 
 $isEn = current_locale() === 'en';
+$localeKey = $isEn ? 'en' : 'cs';
 $currentYear = date('Y');
 $currentSkin = current_skin();
 
@@ -152,6 +155,14 @@ $copy = $isEn
         'fail_badge' => 'FAKAP',
         'footer_note' => 'CC-BY-ND-NC %s',
     ];
+
+$copy = array_replace($copy, $publicLogConfig['copy'][$localeKey] ?? []);
+
+$showBalanceEntryCount = (bool) ($publicLogDisplay['show_balance_entry_count'] ?? true);
+$showWorkMixTotal = (bool) ($publicLogDisplay['show_work_mix_total'] ?? true);
+$showWorkMixHours = (bool) ($publicLogDisplay['show_work_mix_hours'] ?? true);
+$mobileScrollReflections = (bool) ($publicLogDisplay['mobile_scroll_reflections'] ?? false);
+$footerHtml = $publicLogDisplay['footer_html'] ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo e(current_locale()); ?>">
@@ -216,10 +227,12 @@ $copy = $isEn
                                         </tr>
                                     <?php endif; ?>
 
-                                    <tr>
-                                        <td><?php echo e($copy['entries_label']); ?></td>
-                                        <td><?php echo e((string) $balance['entry_count']); ?></td>
-                                    </tr>
+                                    <?php if ($showBalanceEntryCount): ?>
+                                        <tr>
+                                            <td><?php echo e($copy['entries_label']); ?></td>
+                                            <td><?php echo e((string) $balance['entry_count']); ?></td>
+                                        </tr>
+                                    <?php endif; ?>
                                     <tr>
                                         <td><?php echo e($copy['work_total_label']); ?></td>
                                         <td><?php echo e($balance['work_hours_label']); ?></td>
@@ -323,18 +336,26 @@ echo e($trendLabelsDisplay);
                                     <col>
                                 </colgroup>
                                 <tbody>
-                                    <tr>
-                                        <td><?php echo e($copy['work_total_label']); ?></td>
-                                        <td><?php echo e($workMix['total_hours_label']); ?></td>
-                                    </tr>
-                                    <tr class="therm-row">
-                                        <td colspan="2"></td>
-                                    </tr>
+                                    <?php if ($showWorkMixTotal): ?>
+                                        <tr>
+                                            <td><?php echo e($copy['work_total_label']); ?></td>
+                                            <td><?php echo e($workMix['total_hours_label']); ?></td>
+                                        </tr>
+                                        <tr class="therm-row">
+                                            <td colspan="2"></td>
+                                        </tr>
+                                    <?php endif; ?>
 
                                     <?php foreach ($workMix['rows'] as $row): ?>
                                         <tr>
                                             <td><?php echo e($row['label']); ?></td>
-                                            <td><?php echo e($row['percent'] . '% · ' . $row['hours_label']); ?></td>
+                                            <td>
+                                                <?php
+                                                echo e($showWorkMixHours
+                                                    ? $row['percent'] . '% · ' . $row['hours_label']
+                                                    : $row['percent'] . '% ');
+                                                ?>
+                                            </td>
                                         </tr>
                                         <tr class="therm-row">
                                             <td colspan="2">
@@ -395,7 +416,7 @@ echo e($trendLabelsDisplay);
                 <?php endforeach; ?>
             </section>
 
-            <aside class="log-right">
+            <aside class="log-right" id="reflections-box">
                 <div class="log-right-inner">
                     <div class="reflection-pane">
                         <div class="pane-titlebar">>> <?php echo e($copy['reflections']); ?> <<</div>
@@ -442,6 +463,7 @@ echo e($trendLabelsDisplay);
 
                                     <form method="post" action="<?php echo e(route_url('reflections.store')); ?>" class="reflection-form">
                                         <input type="hidden" name="entry_id" value="<?php echo e((string) $entry['id']); ?>">
+                                        <input type="hidden" name="return_url" value="<?php echo e(url('log.php?lang=' . rawurlencode(current_locale()) . '&skin=' . rawurlencode($currentSkin) . '#entry-' . (int) $entry['id'])); ?>">
 
                                         <div class="form-row">
                                             <label for="author_name_<?php echo e((string) $entry['id']); ?>"><?php echo e($copy['name']); ?></label>
@@ -481,6 +503,9 @@ echo e($trendLabelsDisplay);
             <div class="log-footer-inner">
                 <div class="log-footer-line">
                     <?php echo e(sprintf($copy['footer_note'], (string) $currentYear)); ?>
+                    <?php if (is_string($footerHtml) && $footerHtml !== ''): ?>
+                        <?php echo $footerHtml; ?>
+                    <?php endif; ?>
                 </div>
 
                 <nav class="skin-switch" aria-label="Skin switch">
@@ -502,6 +527,9 @@ echo e($trendLabelsDisplay);
         (function () {
             const triggers = document.querySelectorAll('[data-reflection-target]');
             const panes = document.querySelectorAll('.reflection-pane-body');
+            const mobileScrollReflections = <?php echo $mobileScrollReflections ? 'true' : 'false'; ?>;
+            const mobileBreakpoint = window.matchMedia('(max-width: 1180px)');
+            const reflectionsBox = document.getElementById('reflections-box');
 
             function openPane(id) {
                 let found = false;
@@ -517,6 +545,15 @@ echo e($trendLabelsDisplay);
                 const fallback = document.getElementById('reflection-pane-default');
                 if (fallback) {
                     fallback.classList.toggle('is-active', !found);
+                }
+
+                if (mobileScrollReflections && found && mobileBreakpoint.matches && reflectionsBox) {
+                    window.setTimeout(function () {
+                        reflectionsBox.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }, 20);
                 }
             }
 

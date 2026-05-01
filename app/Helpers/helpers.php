@@ -90,24 +90,45 @@ if (!function_exists('e')) {
     }
 }
 
+if (!function_exists('base_url_path')) {
+    function base_url_path(): string
+    {
+        $configuredBase = config('app.base_path');
+
+        if (is_string($configuredBase)) {
+            $base = trim($configuredBase);
+
+            if ($base === '' || $base === '/') {
+                return '';
+            }
+
+            return '/' . trim($base, '/');
+        }
+
+        $base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+
+        if ($base === '' || $base === '/') {
+            return '';
+        }
+
+        return $base;
+    }
+}
+
 if (!function_exists('base_url')) {
     function base_url(string $path = ''): string
     {
-        $base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
-
-        if ($base === '/' || $base === '.') {
-            $base = '';
-        }
+        $base = base_url_path();
 
         if ($path === '') {
-            return $base ?: '/';
+            return $base !== '' ? $base . '/' : '/';
         }
 
         if (str_starts_with($path, '?')) {
-            return ($base ?: '') . '/' . ltrim($path, '/');
+            return ($base !== '' ? $base : '') . '/' . ltrim($path, '/');
         }
 
-        return ($base ?: '') . '/' . ltrim($path, '/');
+        return ($base !== '' ? $base : '') . '/' . ltrim($path, '/');
     }
 }
 

@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-session_start();
-
-require_once dirname(__DIR__) . '/app/Helpers/helpers.php';
+require_once __DIR__ . '/Helpers/helpers.php';
 
 spl_autoload_register(function (string $class): void {
     $prefix = 'App\\';
@@ -20,9 +18,3 @@ spl_autoload_register(function (string $class): void {
         require_once $file;
     }
 });
-
-use App\Core\App;
-use App\Core\Router;
-
-App::boot();
-Router::dispatch();

@@ -33,7 +33,48 @@ class App
             $config[$name] = require $file;
         }
 
+        foreach ([base_path('config.php'), base_path('private/config.php')] as $file) {
+            if (!is_file($file)) {
+                continue;
+            }
+
+            $localConfig = require $file;
+
+            if (is_array($localConfig)) {
+                $config = self::mergeConfig($config, $localConfig);
+            }
+        }
+
         self::set('config', $config);
+    }
+
+    protected static function mergeConfig(array $base, array $override): array
+    {
+        foreach ($override as $key => $value) {
+            if (
+                array_key_exists($key, $base)
+                && is_array($base[$key])
+                && is_array($value)
+                && !self::isList($base[$key])
+                && !self::isList($value)
+            ) {
+                $base[$key] = self::mergeConfig($base[$key], $value);
+                continue;
+            }
+
+            $base[$key] = $value;
+        }
+
+        return $base;
+    }
+
+    protected static function isList(array $value): bool
+    {
+        if ($value === []) {
+            return true;
+        }
+
+        return array_keys($value) === range(0, count($value) - 1);
     }
 
     protected static function resolveLocale(): void

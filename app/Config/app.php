@@ -4,6 +4,7 @@ return [
     'app_name' => 'Public Ethics of Work',
     'app_slug' => 'public-ethics-of-work',
     'app_version' => '0.1.0',
+    'base_path' => null,
 
     'default_locale' => 'cs',
     'available_locales' => ['cs', 'en'],
@@ -57,5 +58,19 @@ return [
         'tagline_en' => 'public ethics of work',
         'description_cs' => 'Open-source pracovní log pro achievementy, fuckupy, regen, projekty a veřejnou reflexi.',
         'description_en' => 'An open-source work log for achievements, fuckups, regen, projects, and public reflection.',
+    ],
+
+    'public_log' => [
+        'copy' => [
+            'cs' => [],
+            'en' => [],
+        ],
+        'display' => [
+            'show_balance_entry_count' => true,
+            'show_work_mix_total' => true,
+            'show_work_mix_hours' => true,
+            'mobile_scroll_reflections' => false,
+            'footer_html' => null,
+        ],
     ],
 ];

@@ -1,4 +1,9 @@
+Options -Indexes
+
 RewriteEngine On
+
+RewriteRule ^(app|database|private)(/|$) - [F,L]
+RewriteRule ^(config\.php|\.env)$ - [F,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
