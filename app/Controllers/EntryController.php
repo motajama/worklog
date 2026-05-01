@@ -324,27 +324,61 @@ class EntryController
             $nextTime = $nextTime !== '' ? $nextTime : null;
         }
 
-        $questionnaireValues = [];
-        foreach (self::questionnaireFieldLabels() as $field => $label) {
-            $raw = trim((string) ($input[$field] ?? ''));
+        $questionnaireValues = array_fill_keys(array_keys(self::questionnaireFieldLabels()), null);
+        $simpleCheckFields = self::simpleCheckFields();
+        $hasSimpleCheckInput = false;
 
-            if ($raw === '') {
-                $questionnaireValues[$field] = null;
-                continue;
+        foreach (array_keys($simpleCheckFields) as $field) {
+            if (array_key_exists($field, $input)) {
+                $hasSimpleCheckInput = true;
+                break;
             }
+        }
 
-            if (!ctype_digit($raw)) {
-                $errors[] = $label . ': odpověď musí být 0–4.';
-                continue;
+        if ($hasSimpleCheckInput) {
+            foreach ($simpleCheckFields as $field => $group) {
+                $raw = trim((string) ($input[$field] ?? ''));
+
+                if ($raw === '') {
+                    continue;
+                }
+
+                if (!ctype_digit($raw)) {
+                    $errors[] = $group['label'] . ': odpověď musí být 0–4.';
+                    continue;
+                }
+
+                $value = (int) $raw;
+                if ($value < 0 || $value > 4) {
+                    $errors[] = $group['label'] . ': odpověď musí být 0–4.';
+                    continue;
+                }
+
+                foreach ($group['fields'] as $mappedField) {
+                    $questionnaireValues[$mappedField] = $value;
+                }
             }
+        } else {
+            foreach (self::questionnaireFieldLabels() as $field => $label) {
+                $raw = trim((string) ($input[$field] ?? ''));
 
-            $value = (int) $raw;
-            if ($value < 0 || $value > 4) {
-                $errors[] = $label . ': odpověď musí být 0–4.';
-                continue;
+                if ($raw === '') {
+                    continue;
+                }
+
+                if (!ctype_digit($raw)) {
+                    $errors[] = $label . ': odpověď musí být 0–4.';
+                    continue;
+                }
+
+                $value = (int) $raw;
+                if ($value < 0 || $value > 4) {
+                    $errors[] = $label . ': odpověď musí být 0–4.';
+                    continue;
+                }
+
+                $questionnaireValues[$field] = $value;
             }
-
-            $questionnaireValues[$field] = $value;
         }
 
         return [
@@ -391,6 +425,39 @@ class EntryController
             'recovery_relaxation' => 'Recovery: relaxace',
             'recovery_mastery' => 'Recovery: mastery',
             'recovery_control' => 'Recovery: kontrola času',
+        ];
+    }
+
+    protected static function simpleCheckFields(): array
+    {
+        return [
+            'balance_workload' => [
+                'label' => 'Pracovní tlak',
+                'fields' => [
+                    'copsoq_quantitative_demands',
+                    'copsoq_work_pace',
+                    'copsoq_cognitive_demands',
+                    'copsoq_low_control',
+                ],
+            ],
+            'balance_fatigue' => [
+                'label' => 'Únava po práci',
+                'fields' => [
+                    'nfr_exhausted',
+                    'nfr_detach_difficulty',
+                    'nfr_need_long_recovery',
+                    'nfr_overload',
+                ],
+            ],
+            'balance_recovery' => [
+                'label' => 'Kvalita obnovy',
+                'fields' => [
+                    'recovery_detachment',
+                    'recovery_relaxation',
+                    'recovery_mastery',
+                    'recovery_control',
+                ],
+            ],
         ];
     }
 

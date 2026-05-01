@@ -53,24 +53,24 @@ echo e('status                 ' . $balance30['balance_status']) . "\n";
     <?php endif; ?>
 
     <article class="card ascii-card">
-        <h2>COPSOQ III + NFR + Recovery Experience / short module / last 30 days</h2>
+        <h2>quick balance check / last 30 days</h2>
 
         <?php if (!$scientific30['has_data']): ?>
-            <div class="muted-line">Zatím žádná vyplněná metodická data.</div>
+            <div class="muted-line">Zatím žádná data z balance checku.</div>
         <?php else: ?>
             <pre class="ascii-block"><?php
-echo e('questionnaire entries  ' . $scientific30['questionnaire_entry_count']) . "\n";
-echo e('copsoq workload        ' . $scientific30['copsoq_workload_mean_label']) . "\n";
-echo e('nfr fatigue            ' . $scientific30['nfr_mean_label']) . "\n";
-echo e('recovery experience    ' . $scientific30['recovery_experience_mean_label']) . "\n";
-echo e('derived balance        ' . $scientific30['derived_balance_percent_label'] . '  ' . $scientific30['derived_balance_bar']) . "\n";
+echo e('check-ins              ' . $scientific30['questionnaire_entry_count']) . "\n";
+echo e('work pressure          ' . $scientific30['copsoq_workload_mean_label']) . "\n";
+echo e('fatigue                ' . $scientific30['nfr_mean_label']) . "\n";
+echo e('recovery quality       ' . $scientific30['recovery_experience_mean_label']) . "\n";
+echo e('balance score          ' . $scientific30['derived_balance_percent_label'] . '  ' . $scientific30['derived_balance_bar']) . "\n";
 echo e('status                 ' . $scientific30['derived_status']) . "\n";
 ?></pre>
         <?php endif; ?>
     </article>
 
     <article class="card ascii-card">
-        <h2>balance / last 12 closed months / COPSOQ+NFR+Recovery</h2>
+        <h2>quick balance / last 12 closed months</h2>
 
         <?php if (empty($scientificTrend12['chart_rows'])): ?>
             <div class="muted-line">Zatím žádná data pro trend.</div>

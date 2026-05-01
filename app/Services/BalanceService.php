@@ -220,9 +220,9 @@ class BalanceService
         $questionnaireEntryCount = 0;
 
         foreach ($rows as $row) {
-            $copsoq = self::completeScaleAverage($row, self::COPSOQ_FIELDS);
-            $nfr = self::completeScaleAverage($row, self::NFR_FIELDS);
-            $recovery = self::completeScaleAverage($row, self::RECOVERY_EXPERIENCE_FIELDS);
+            $copsoq = self::scaleAverage($row, self::COPSOQ_FIELDS);
+            $nfr = self::scaleAverage($row, self::NFR_FIELDS);
+            $recovery = self::scaleAverage($row, self::RECOVERY_EXPERIENCE_FIELDS);
 
             if ($copsoq !== null || $nfr !== null || $recovery !== null) {
                 $questionnaireEntryCount++;
@@ -323,19 +323,19 @@ class BalanceService
         ];
     }
 
-    protected static function completeScaleAverage(array $row, array $fields): ?float
+    protected static function scaleAverage(array $row, array $fields): ?float
     {
         $values = [];
 
         foreach ($fields as $field) {
             if (!array_key_exists($field, $row) || $row[$field] === null || $row[$field] === '') {
-                return null;
+                continue;
             }
 
             $values[] = (int) $row[$field];
         }
 
-        return self::mean($values);
+        return $values !== [] ? self::mean($values) : null;
     }
 
     protected static function mean(array $values): ?float

@@ -55,34 +55,58 @@ $allowReflectionsChecked = old(
 $workCategories = array_values(array_filter($categories, fn($c) => $c['kind'] === 'work'));
 $recoveryCategories = array_values(array_filter($categories, fn($c) => $c['kind'] === 'recovery'));
 
+$averageScore = static function (array $fields) use ($entryData): string {
+    $values = [];
+
+    foreach ($fields as $field) {
+        $value = $entryData[$field] ?? '';
+
+        if ($value !== '' && is_numeric($value)) {
+            $values[] = (int) $value;
+        }
+    }
+
+    if ($values === []) {
+        return '';
+    }
+
+    return (string) (int) round(array_sum($values) / count($values));
+};
+
+$simpleBalanceData = [
+    'balance_workload' => old('balance_workload', $averageScore([
+        'copsoq_quantitative_demands',
+        'copsoq_work_pace',
+        'copsoq_cognitive_demands',
+        'copsoq_low_control',
+    ])),
+    'balance_fatigue' => old('balance_fatigue', $averageScore([
+        'nfr_exhausted',
+        'nfr_detach_difficulty',
+        'nfr_need_long_recovery',
+        'nfr_overload',
+    ])),
+    'balance_recovery' => old('balance_recovery', $averageScore([
+        'recovery_detachment',
+        'recovery_relaxation',
+        'recovery_mastery',
+        'recovery_control',
+    ])),
+];
+
 $likertOptions = [
-    '' => '—',
-    '0' => '0 = vůbec ne',
-    '1' => '1',
-    '2' => '2',
-    '3' => '3',
-    '4' => '4 = extrémně / silně',
+    '' => 'nevyplněno',
+    '0' => '0 = velmi nízké',
+    '1' => '1 = nízké',
+    '2' => '2 = střední',
+    '3' => '3 = vysoké',
+    '4' => '4 = velmi vysoké',
 ];
 
-$copsoqQuestions = [
-    'copsoq_quantitative_demands' => 'Dnes jsem měl/a příliš mnoho práce.',
-    'copsoq_work_pace' => 'Musel/a jsem pracovat velmi rychle.',
-    'copsoq_cognitive_demands' => 'Práce byla mentálně náročná.',
-    'copsoq_low_control' => 'Měl/a jsem málo kontroly nad tempem práce.',
-];
-
-$nfrQuestions = [
-    'nfr_exhausted' => 'Po práci jsem byl/a vyčerpaný/á.',
-    'nfr_detach_difficulty' => 'Měl/a jsem problém se od práce odpoutat.',
-    'nfr_need_long_recovery' => 'Potřeboval/a jsem hodně času na zotavení.',
-    'nfr_overload' => 'Cítil/a jsem přetížení.',
-];
-
-$recoveryQuestions = [
-    'recovery_detachment' => 'Dokázal/a jsem vypnout od práce.',
-    'recovery_relaxation' => 'Opravdu jsem si odpočinul/a.',
-    'recovery_mastery' => 'Dělal/a jsem něco rozvíjejícího.',
-    'recovery_control' => 'Měl/a jsem kontrolu nad svým časem.',
+$simpleBalanceQuestions = [
+    'balance_workload' => 'Jak silný byl pracovní tlak?',
+    'balance_fatigue' => 'Jak silná byla únava / potřeba zotavení?',
+    'balance_recovery' => 'Jak dobrá byla reálná obnova?',
 ];
 ?>
 
@@ -242,64 +266,24 @@ $recoveryQuestions = [
             </div>
 
             <div class="questionnaire-fields">
-                <h2>COPSOQ III + NFR + Recovery Experience / short module</h2>
+                <h2>rychlý balance check</h2>
                 <div class="help-line">
-                    Dobrovolné. Škála 0–4. Pokud necháš prázdné, starý balance model funguje dál a nový modul se do výpočtu nezapočte.
+                    Dobrovolné. Tři odpovědi 0–4 stačí pro měsíční veřejný přehled.
                 </div>
 
-                <div class="grid grid-2">
-                    <div class="card">
-                        <h3>COPSOQ / workload</h3>
-
-                        <?php foreach ($copsoqQuestions as $field => $label): ?>
-                            <div class="form-row">
-                                <label for="<?php echo e($field); ?>"><?php echo e($label); ?></label>
-                                <select id="<?php echo e($field); ?>" name="<?php echo e($field); ?>">
-                                    <?php foreach ($likertOptions as $value => $optionLabel): ?>
-                                        <option value="<?php echo e($value); ?>" <?php echo $entryData[$field] === $value ? 'selected' : ''; ?>>
-                                            <?php echo e($optionLabel); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <div class="card">
-                        <h3>NFR / fatigue</h3>
-
-                        <?php foreach ($nfrQuestions as $field => $label): ?>
-                            <div class="form-row">
-                                <label for="<?php echo e($field); ?>"><?php echo e($label); ?></label>
-                                <select id="<?php echo e($field); ?>" name="<?php echo e($field); ?>">
-                                    <?php foreach ($likertOptions as $value => $optionLabel): ?>
-                                        <option value="<?php echo e($value); ?>" <?php echo $entryData[$field] === $value ? 'selected' : ''; ?>>
-                                            <?php echo e($optionLabel); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-
-                <div class="card" style="margin-top: 1rem;">
-                    <h3>Recovery Experience</h3>
-
-                    <div class="grid grid-2">
-                        <?php foreach ($recoveryQuestions as $field => $label): ?>
-                            <div class="form-row">
-                                <label for="<?php echo e($field); ?>"><?php echo e($label); ?></label>
-                                <select id="<?php echo e($field); ?>" name="<?php echo e($field); ?>">
-                                    <?php foreach ($likertOptions as $value => $optionLabel): ?>
-                                        <option value="<?php echo e($value); ?>" <?php echo $entryData[$field] === $value ? 'selected' : ''; ?>>
-                                            <?php echo e($optionLabel); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+                <div class="grid grid-3">
+                    <?php foreach ($simpleBalanceQuestions as $field => $label): ?>
+                        <div class="form-row">
+                            <label for="<?php echo e($field); ?>"><?php echo e($label); ?></label>
+                            <select id="<?php echo e($field); ?>" name="<?php echo e($field); ?>">
+                                <?php foreach ($likertOptions as $value => $optionLabel): ?>
+                                    <option value="<?php echo e($value); ?>" <?php echo $simpleBalanceData[$field] === $value ? 'selected' : ''; ?>>
+                                        <?php echo e($optionLabel); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
 
