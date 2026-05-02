@@ -83,6 +83,32 @@ class DB
         return $stmt->execute($params);
     }
 
+    public static function beginTransaction(): bool
+    {
+        return self::connection()->beginTransaction();
+    }
+
+    public static function commit(): bool
+    {
+        return self::connection()->commit();
+    }
+
+    public static function rollBack(): bool
+    {
+        $pdo = self::connection();
+
+        if (!$pdo->inTransaction()) {
+            return false;
+        }
+
+        return $pdo->rollBack();
+    }
+
+    public static function lastInsertId(): string
+    {
+        return self::connection()->lastInsertId();
+    }
+
     protected static function baseOptions(): array
     {
         return [

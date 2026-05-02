@@ -62,6 +62,7 @@ In the public layer:
 - public monthly log grouped by month
 - public reflections for selected fuckup/fail entries
 - recovery/workload balance model
+- editable carbon footprint factors and per-entry kgCO2e snapshots
 - skin-based design system
 - Czech/English interface
 - editable intro page content in HTML
@@ -87,6 +88,7 @@ Each entry can include:
 - locale
 - invisible-work flag
 - optional workload / recovery overrides
+- optional carbon footprint items saved as kgCO2e snapshots
 
 For `fuckup` entries, additional reflective fields are available:
 
@@ -107,6 +109,29 @@ Reflections are user-submitted responses to selected public fuckup/fail entries.
 - `pending`
 - `approved`
 - `rejected`
+
+### Carbon footprint
+
+Footprint data is stored internally as `kgCO2e`.
+
+The admin can maintain a personal catalog of editable footprint factors in `/admin/footprint`.
+Each entry can have zero or more footprint items. A saved item stores a snapshot of the factor label, unit, factor value, and methodology note, so changing a factor later does not recalculate historical entries.
+
+Entry statuses:
+
+- `not_rated` means no footprint data was entered
+- `complete` means saved footprint items are present
+- `partial` means at least one item was saved but the submitted form also had an incomplete row
+
+Default seed factors are estimates stored in the database, not hardcoded truths. AI footprint factors are treated as editable estimates.
+
+Recurring footprint rules can be generated from CLI:
+
+```bash
+php scripts/generate_recurring_footprints.php
+```
+
+The generator covers today minus 7 days through today plus 35 days and is idempotent through `UNIQUE(rule_id, occurrence_date)`.
 
 ### Settings
 
@@ -207,6 +232,22 @@ http://localhost:8000/log.php
 
 If you are using phpMyAdmin, open the SQL tab and run the contents of `schema.sql`, then `seed.sql`.
 
+### Updating an existing install
+
+For an existing database, run the footprint migration before using the new admin UI:
+
+```bash
+mysql your_database < database/migrate-footprint.mysql.sql
+```
+
+For SQLite:
+
+```bash
+sqlite3 database/worklog.sqlite < database/migrate-footprint.sql
+```
+
+Then open `/admin/footprint` once to review the seeded editable factors.
+
 ---
 
 ## First steps after install
@@ -218,6 +259,7 @@ If you are using phpMyAdmin, open the SQL tab and run the contents of `schema.sq
 5. Open `log.php` and check the public layer.
 6. Create test entries for all four entry types.
 7. Approve at least one reflection to verify the moderation loop.
+8. Open **footprint** in admin, review seed factors, and adjust estimates for your own context.
 
 ---
 
@@ -248,6 +290,7 @@ It shows:
 - the public reflection interface for selected fail/fuckup entries
 - the balance block
 - the work barometer
+- per-entry footprint labels for public entries that have footprint data
 
 The monthly list itself only shows public entries, but the summary statistics can be configured to draw from all entries.
 
@@ -513,7 +556,8 @@ A simple working rhythm:
 3. publish failures only when you are ready for reflection
 4. moderate reflections periodically
 5. review the balance panel monthly
-6. revise project categories and labels when needed
+6. review footprint factors periodically
+7. revise project categories and labels when needed
 
 ---
 

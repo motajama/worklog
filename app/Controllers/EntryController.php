@@ -3,7 +3,10 @@
 namespace App\Controllers;
 
 use App\Core\DB;
+use App\Core\Auth;
 use App\Core\View;
+use App\Services\FootprintService;
+use Throwable;
 
 class EntryController
 {
@@ -29,10 +32,14 @@ class EntryController
 
     public static function create(): void
     {
+        $userId = (int) Auth::id();
+
         View::render('admin/entries/form', [
             'page_title' => t('page.admin_entry_create_title'),
             'mode' => 'create',
             'entry' => self::emptyEntry(),
+            'footprint_items' => [],
+            'footprint_factors' => FootprintService::factorsForUser($userId, true),
             'type_options' => self::typeOptions(),
             'visibility_options' => self::visibilityOptions(),
             'locale_options' => self::localeOptions(),
@@ -43,7 +50,10 @@ class EntryController
 
     public static function store(array $params = []): void
     {
+        $userId = (int) Auth::id();
         $data = self::validate($_POST);
+        $footprint = FootprintService::validateItems($_POST, $userId);
+        $data['errors'] = array_merge($data['errors'], $footprint['errors']);
 
         if ($data['errors']) {
             flash('error', implode(' ', $data['errors']));
@@ -51,28 +61,41 @@ class EntryController
             redirect(route_url('admin.entries.create'));
         }
 
-        DB::execute(
-            'INSERT INTO entries (
-                entry_date, slug, entry_type, title, body, public_text, private_notes, minutes,
-                category_id, project_id, visibility, locale, is_invisible_work,
-                workload_override, recovery_override,
-                copsoq_quantitative_demands, copsoq_work_pace, copsoq_cognitive_demands, copsoq_low_control,
-                nfr_exhausted, nfr_detach_difficulty, nfr_need_long_recovery, nfr_overload,
-                recovery_detachment, recovery_relaxation, recovery_mastery, recovery_control,
-                what_happened, why_it_matters, my_take, next_time,
-                allow_reflections
-            ) VALUES (
-                :entry_date, :slug, :entry_type, :title, :body, :public_text, :private_notes, :minutes,
-                :category_id, :project_id, :visibility, :locale, :is_invisible_work,
-                :workload_override, :recovery_override,
-                :copsoq_quantitative_demands, :copsoq_work_pace, :copsoq_cognitive_demands, :copsoq_low_control,
-                :nfr_exhausted, :nfr_detach_difficulty, :nfr_need_long_recovery, :nfr_overload,
-                :recovery_detachment, :recovery_relaxation, :recovery_mastery, :recovery_control,
-                :what_happened, :why_it_matters, :my_take, :next_time,
-                :allow_reflections
-            )',
-            $data['values']
-        );
+        try {
+            DB::beginTransaction();
+
+            DB::execute(
+                'INSERT INTO entries (
+                    entry_date, slug, entry_type, title, body, public_text, private_notes, minutes,
+                    category_id, project_id, visibility, locale, is_invisible_work,
+                    workload_override, recovery_override,
+                    copsoq_quantitative_demands, copsoq_work_pace, copsoq_cognitive_demands, copsoq_low_control,
+                    nfr_exhausted, nfr_detach_difficulty, nfr_need_long_recovery, nfr_overload,
+                    recovery_detachment, recovery_relaxation, recovery_mastery, recovery_control,
+                    what_happened, why_it_matters, my_take, next_time,
+                    allow_reflections
+                ) VALUES (
+                    :entry_date, :slug, :entry_type, :title, :body, :public_text, :private_notes, :minutes,
+                    :category_id, :project_id, :visibility, :locale, :is_invisible_work,
+                    :workload_override, :recovery_override,
+                    :copsoq_quantitative_demands, :copsoq_work_pace, :copsoq_cognitive_demands, :copsoq_low_control,
+                    :nfr_exhausted, :nfr_detach_difficulty, :nfr_need_long_recovery, :nfr_overload,
+                    :recovery_detachment, :recovery_relaxation, :recovery_mastery, :recovery_control,
+                    :what_happened, :why_it_matters, :my_take, :next_time,
+                    :allow_reflections
+                )',
+                $data['values']
+            );
+
+            $entryId = (int) DB::lastInsertId();
+            FootprintService::saveItemsForEntry($entryId, $footprint['items'], $footprint['status']);
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            flash('error', 'Entry se nepodařilo uložit: ' . $e->getMessage());
+            old_input($_POST);
+            redirect(route_url('admin.entries.create'));
+        }
 
         forget_old_input();
         flash('success', 'Entry byl vytvořen.');
@@ -88,10 +111,13 @@ class EntryController
             redirect(route_url('admin.entries.index'));
         }
 
+        $userId = (int) Auth::id();
         View::render('admin/entries/form', [
             'page_title' => t('page.admin_entry_edit_title'),
             'mode' => 'edit',
             'entry' => $entry,
+            'footprint_items' => FootprintService::itemsForEntry((int) $entry['id']),
+            'footprint_factors' => FootprintService::factorsForUser($userId, true),
             'type_options' => self::typeOptions(),
             'visibility_options' => self::visibilityOptions(),
             'locale_options' => self::localeOptions(),
@@ -110,7 +136,10 @@ class EntryController
             redirect(route_url('admin.entries.index'));
         }
 
+        $userId = (int) Auth::id();
         $data = self::validate($_POST, $entryId);
+        $footprint = FootprintService::validateItems($_POST, $userId);
+        $data['errors'] = array_merge($data['errors'], $footprint['errors']);
 
         if ($data['errors']) {
             flash('error', implode(' ', $data['errors']));
@@ -121,44 +150,56 @@ class EntryController
         $values = $data['values'];
         $values['id'] = $entryId;
 
-        DB::execute(
-            'UPDATE entries SET
-                entry_date = :entry_date,
-                slug = :slug,
-                entry_type = :entry_type,
-                title = :title,
-                body = :body,
-                public_text = :public_text,
-                private_notes = :private_notes,
-                minutes = :minutes,
-                category_id = :category_id,
-                project_id = :project_id,
-                visibility = :visibility,
-                locale = :locale,
-                is_invisible_work = :is_invisible_work,
-                workload_override = :workload_override,
-                recovery_override = :recovery_override,
-                copsoq_quantitative_demands = :copsoq_quantitative_demands,
-                copsoq_work_pace = :copsoq_work_pace,
-                copsoq_cognitive_demands = :copsoq_cognitive_demands,
-                copsoq_low_control = :copsoq_low_control,
-                nfr_exhausted = :nfr_exhausted,
-                nfr_detach_difficulty = :nfr_detach_difficulty,
-                nfr_need_long_recovery = :nfr_need_long_recovery,
-                nfr_overload = :nfr_overload,
-                recovery_detachment = :recovery_detachment,
-                recovery_relaxation = :recovery_relaxation,
-                recovery_mastery = :recovery_mastery,
-                recovery_control = :recovery_control,
-                what_happened = :what_happened,
-                why_it_matters = :why_it_matters,
-                my_take = :my_take,
-                next_time = :next_time,
-                allow_reflections = :allow_reflections,
-                updated_at = CURRENT_TIMESTAMP
-             WHERE id = :id',
-            $values
-        );
+        try {
+            DB::beginTransaction();
+
+            DB::execute(
+                'UPDATE entries SET
+                    entry_date = :entry_date,
+                    slug = :slug,
+                    entry_type = :entry_type,
+                    title = :title,
+                    body = :body,
+                    public_text = :public_text,
+                    private_notes = :private_notes,
+                    minutes = :minutes,
+                    category_id = :category_id,
+                    project_id = :project_id,
+                    visibility = :visibility,
+                    locale = :locale,
+                    is_invisible_work = :is_invisible_work,
+                    workload_override = :workload_override,
+                    recovery_override = :recovery_override,
+                    copsoq_quantitative_demands = :copsoq_quantitative_demands,
+                    copsoq_work_pace = :copsoq_work_pace,
+                    copsoq_cognitive_demands = :copsoq_cognitive_demands,
+                    copsoq_low_control = :copsoq_low_control,
+                    nfr_exhausted = :nfr_exhausted,
+                    nfr_detach_difficulty = :nfr_detach_difficulty,
+                    nfr_need_long_recovery = :nfr_need_long_recovery,
+                    nfr_overload = :nfr_overload,
+                    recovery_detachment = :recovery_detachment,
+                    recovery_relaxation = :recovery_relaxation,
+                    recovery_mastery = :recovery_mastery,
+                    recovery_control = :recovery_control,
+                    what_happened = :what_happened,
+                    why_it_matters = :why_it_matters,
+                    my_take = :my_take,
+                    next_time = :next_time,
+                    allow_reflections = :allow_reflections,
+                    updated_at = CURRENT_TIMESTAMP
+                 WHERE id = :id',
+                $values
+            );
+
+            FootprintService::saveItemsForEntry($entryId, $footprint['items'], $footprint['status']);
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            flash('error', 'Entry se nepodařilo uložit: ' . $e->getMessage());
+            old_input($_POST);
+            redirect(route_url('admin.entries.edit', ['id' => $entryId]));
+        }
 
         forget_old_input();
         flash('success', 'Entry byl upraven.');

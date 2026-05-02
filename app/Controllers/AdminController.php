@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Core\DB;
 use App\Core\View;
 use App\Services\BalanceService;
+use App\Services\FootprintService;
 
 class AdminController
 {
@@ -22,6 +23,8 @@ class AdminController
                 e.title,
                 e.visibility,
                 e.minutes,
+                e.emissions_total_kg,
+                e.emissions_status,
                 c.name AS category_name,
                 p.title AS project_title
              FROM entries e
@@ -59,6 +62,8 @@ class AdminController
             'pending_reflections' => $pendingReflections,
             'balance_7' => BalanceService::rangeSummary(7),
             'balance_30' => BalanceService::rangeSummary(30),
+            'footprint_30' => FootprintService::totalsForPeriod(30),
+            'recurring_footprint_30' => FootprintService::recurringTotalsForPeriod(30),
         ]);
     }
 }

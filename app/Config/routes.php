@@ -3,6 +3,7 @@
 use App\Controllers\AdminController;
 use App\Controllers\AuthController;
 use App\Controllers\EntryController;
+use App\Controllers\FootprintController;
 use App\Controllers\HomeController;
 use App\Controllers\ProjectController;
 use App\Controllers\ReflectionController;
@@ -133,6 +134,42 @@ return [
         'path' => '/admin/entry/{id}/delete',
         'name' => 'admin.entries.delete',
         'handler' => [EntryController::class, 'delete'],
+        'middleware' => ['auth'],
+    ],
+
+    [
+        'method' => 'GET',
+        'path' => '/admin/footprint',
+        'name' => 'admin.footprint.index',
+        'handler' => [FootprintController::class, 'index'],
+        'middleware' => ['auth'],
+    ],
+    [
+        'method' => 'GET',
+        'path' => '/admin/footprint/create',
+        'name' => 'admin.footprint.create',
+        'handler' => [FootprintController::class, 'create'],
+        'middleware' => ['auth'],
+    ],
+    [
+        'method' => 'POST',
+        'path' => '/admin/footprint/store',
+        'name' => 'admin.footprint.store',
+        'handler' => [FootprintController::class, 'store'],
+        'middleware' => ['auth'],
+    ],
+    [
+        'method' => 'GET',
+        'path' => '/admin/footprint/{id}/edit',
+        'name' => 'admin.footprint.edit',
+        'handler' => [FootprintController::class, 'edit'],
+        'middleware' => ['auth'],
+    ],
+    [
+        'method' => 'POST',
+        'path' => '/admin/footprint/{id}/update',
+        'name' => 'admin.footprint.update',
+        'handler' => [FootprintController::class, 'update'],
         'middleware' => ['auth'],
     ],
 

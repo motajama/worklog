@@ -9,6 +9,11 @@ $latestEntries = $latest_entries ?? [];
 $pendingReflections = $pending_reflections ?? [];
 $balance7 = $balance_7 ?? null;
 $balance30 = $balance_30 ?? null;
+$footprint30 = $footprint_30 ?? ['emissions_total_kg' => 0, 'not_rated_count' => 0, 'entry_count' => 0];
+$recurringFootprint30 = $recurring_footprint_30 ?? ['emissions_total_kg' => 0, 'instance_count' => 0];
+$formatKg = static function (float|string|null $value): string {
+    return \App\Services\FootprintService::formatKg($value);
+};
 ?>
 
 <section class="page-section">
@@ -33,6 +38,32 @@ $balance30 = $balance_30 ?? null;
         <article class="card stat-card">
             <h2>pending reflections</h2>
             <div class="stat-number"><?php echo e((string) $stats['pending_reflections']); ?></div>
+        </article>
+    </div>
+
+    <div class="grid grid-3">
+        <article class="card stat-card">
+            <h2>event footprint / 30 days</h2>
+            <div class="stat-number"><?php echo e($formatKg($footprint30['emissions_total_kg'])); ?></div>
+            <div class="table-subline">
+                <?php echo e((string) $footprint30['not_rated_count']); ?> not rated / <?php echo e((string) $footprint30['entry_count']); ?> entries
+            </div>
+        </article>
+
+        <article class="card stat-card">
+            <h2>recurring footprint / 30 days</h2>
+            <div class="stat-number"><?php echo e($formatKg($recurringFootprint30['emissions_total_kg'])); ?></div>
+            <div class="table-subline">
+                <?php echo e((string) $recurringFootprint30['instance_count']); ?> generated instances
+            </div>
+        </article>
+
+        <article class="card stat-card">
+            <h2>combined footprint / 30 days</h2>
+            <div class="stat-number">
+                <?php echo e($formatKg((float) $footprint30['emissions_total_kg'] + (float) $recurringFootprint30['emissions_total_kg'])); ?>
+            </div>
+            <div class="table-subline">event + recurring, kgCO2e</div>
         </article>
     </div>
 
@@ -73,6 +104,12 @@ echo e('status                 ' . $balance['balance_status']) . "\n";
                             · <?php echo e($entry['category_name']); ?>
                             <?php if (!empty($entry['project_title'])): ?>
                                 · <?php echo e($entry['project_title']); ?>
+                            <?php endif; ?>
+                            · footprint:
+                            <?php if (($entry['emissions_status'] ?? 'not_rated') === 'not_rated'): ?>
+                                <span class="status-badge">not rated</span>
+                            <?php else: ?>
+                                <?php echo e($formatKg($entry['emissions_total_kg'])); ?>
                             <?php endif; ?>
                             · <a href="<?php echo e(route_url('admin.entries.edit', ['id' => $entry['id']])); ?>">edit</a>
                         </li>

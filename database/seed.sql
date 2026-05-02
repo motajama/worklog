@@ -26,6 +26,28 @@ INSERT INTO app_settings (setting_key, setting_value) VALUES
 INSERT INTO users (username, password_hash, role, is_active) VALUES
 ('admin', '$2y$12$77YtTL6ky/YOqf8d5Y3zh.IBYJB7yeB/ZhlMAfRYxa1kr7qQfPYta', 'admin', 1);
 
+INSERT INTO footprint_factors (
+    user_id, label, category, base_unit, factor_kg_per_unit, source_note,
+    methodology_note, geography_code, active, editable_by_user, is_seed,
+    valid_from, review_after
+)
+SELECT
+    u.id, f.label, f.category, f.base_unit, f.factor_kg_per_unit, f.source_note,
+    f.methodology_note, 'CZ', 1, 1, 1,
+    CURRENT_TIMESTAMP, datetime('now', '+1 year')
+FROM users u
+CROSS JOIN (
+    SELECT 'Apple MacBook Air A1466 Linux' AS label, 'device' AS category, 'hour' AS base_unit, 0.004 AS factor_kg_per_unit, 'user estimate (~4 g/h)' AS source_note, 'Editable estimate stored as kgCO2e per hour.' AS methodology_note
+    UNION ALL SELECT 'Desktop PC: Teams + Firefox', 'device', 'hour', 0.045, 'editable user estimate', 'Editable estimate stored as kgCO2e per hour.'
+    UNION ALL SELECT 'Train trip CZ', 'transport', 'km', 0.035, 'editable user estimate', 'Editable estimate stored as kgCO2e per km.'
+    UNION ALL SELECT 'Tram trip CZ', 'transport', 'km', 0.010, 'editable user estimate', 'Editable estimate stored as kgCO2e per km.'
+    UNION ALL SELECT 'OpenAI standard use', 'ai', 'event', 0.0002, 'editable user estimate', 'AI footprint is an editable estimate, not a measured truth.'
+    UNION ALL SELECT 'Codex coding session', 'ai', 'hour', 0.020, 'editable user estimate', 'AI footprint is an editable estimate, not a measured truth.'
+) f
+WHERE NOT EXISTS (
+    SELECT 1 FROM footprint_factors existing WHERE existing.user_id = u.id
+);
+
 -- =========================================================
 -- CATEGORIES
 -- WORK

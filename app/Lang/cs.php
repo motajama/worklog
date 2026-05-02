@@ -17,6 +17,7 @@ return [
     'nav.about' => 'o projektu',
     'nav.dashboard' => 'dashboard',
     'nav.entries' => 'záznamy',
+    'nav.footprint' => 'footprint',
     'nav.settings' => 'nastavení',
 
     /*
@@ -137,6 +138,9 @@ return [
     'page.admin_entries_title' => 'entries',
     'page.admin_entry_create_title' => 'nový entry',
     'page.admin_entry_edit_title' => 'editace entry',
+    'page.admin_footprint_title' => 'footprint faktory',
+    'page.admin_footprint_create_title' => 'nový footprint faktor',
+    'page.admin_footprint_edit_title' => 'editace footprint faktoru',
 
     'label.category' => 'kategorie',
     'label.body' => 'text',

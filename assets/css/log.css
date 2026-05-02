@@ -327,6 +327,25 @@ body {
     opacity: 0.8;
 }
 
+.entry-footprint {
+    display: inline-block;
+    margin-left: 0.42rem;
+    white-space: nowrap;
+    font-size: 0.9em;
+    color: green;
+}
+
+.entry-footprint-details {
+    margin-top: 0.35rem;
+    max-width: 80ch;
+    font-size: 0.9em;
+}
+
+.entry-footprint-details ul {
+    margin: 0.35rem 0 0;
+    padding-left: 1.25rem;
+}
+
 .reflection-list {
     display: grid;
     gap: 0;

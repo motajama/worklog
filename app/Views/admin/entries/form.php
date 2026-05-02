@@ -108,6 +108,44 @@ $simpleBalanceQuestions = [
     'balance_fatigue' => 'Jak silná byla únava / potřeba zotavení?',
     'balance_recovery' => 'Jak dobrá byla reálná obnova?',
 ];
+
+$footprintFactors = $footprint_factors ?? [];
+$storedFootprintItems = $footprint_items ?? [];
+$oldFootprintFactorIds = old('footprint_factor_id', null);
+$oldFootprintQuantities = old('footprint_quantity', null);
+$footprintRows = [];
+
+if (is_array($oldFootprintFactorIds) || is_array($oldFootprintQuantities)) {
+    $oldFootprintFactorIds = is_array($oldFootprintFactorIds) ? $oldFootprintFactorIds : [];
+    $oldFootprintQuantities = is_array($oldFootprintQuantities) ? $oldFootprintQuantities : [];
+    $rowCount = max(count($oldFootprintFactorIds), count($oldFootprintQuantities));
+
+    for ($i = 0; $i < $rowCount; $i++) {
+        $footprintRows[] = [
+            'factor_id' => (string) ($oldFootprintFactorIds[$i] ?? ''),
+            'quantity' => (string) ($oldFootprintQuantities[$i] ?? ''),
+        ];
+    }
+} else {
+    foreach ($storedFootprintItems as $item) {
+        $footprintRows[] = [
+            'factor_id' => (string) ($item['factor_id'] ?? ''),
+            'quantity' => (string) ($item['quantity'] ?? ''),
+        ];
+    }
+}
+
+if ($footprintRows === []) {
+    $footprintRows = array_fill(0, 3, [
+        'factor_id' => '',
+        'quantity' => '',
+    ]);
+} elseif (!is_array($oldFootprintFactorIds) && !is_array($oldFootprintQuantities)) {
+    $footprintRows[] = [
+        'factor_id' => '',
+        'quantity' => '',
+    ];
+}
 ?>
 
 <section class="page-section">
@@ -287,6 +325,56 @@ $simpleBalanceQuestions = [
                 </div>
             </div>
 
+            <div class="footprint-fields" data-footprint-form>
+                <h2>carbon footprint</h2>
+                <div class="help-line">
+                    Volitelné. Můžeš přidat více položek; uloží se snapshot faktoru, takže historické entries se po úpravě faktoru nepřepočítají.
+                </div>
+
+                <div class="footprint-rows" data-footprint-rows>
+                    <?php foreach ($footprintRows as $row): ?>
+                        <div class="footprint-row" data-footprint-row>
+                            <div class="form-row">
+                                <label>faktor</label>
+                                <select name="footprint_factor_id[]" data-footprint-factor>
+                                    <option value="">—</option>
+                                    <?php foreach ($footprintFactors as $factor): ?>
+                                        <option
+                                            value="<?php echo e((string) $factor['id']); ?>"
+                                            data-factor="<?php echo e((string) $factor['factor_kg_per_unit']); ?>"
+                                            data-unit="<?php echo e((string) $factor['base_unit']); ?>"
+                                            <?php echo (string) $row['factor_id'] === (string) $factor['id'] ? 'selected' : ''; ?>
+                                        >
+                                            <?php echo e($factor['label']); ?> / <?php echo e($factor['base_unit']); ?> / <?php echo e((string) $factor['factor_kg_per_unit']); ?> kgCO2e
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div class="form-row">
+                                <label>množství / čas</label>
+                                <input type="number" name="footprint_quantity[]" value="<?php echo e((string) $row['quantity']); ?>" min="0" step="0.001" data-footprint-quantity>
+                            </div>
+
+                            <div class="form-row">
+                                <label>subtotal</label>
+                                <div class="footprint-subtotal" data-footprint-subtotal>—</div>
+                            </div>
+
+                            <div class="form-row">
+                                <label>akce</label>
+                                <button type="button" class="secondary-button" data-footprint-remove>odebrat</button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="footprint-actions">
+                    <button type="button" class="secondary-button" data-footprint-add>Přidat položku</button>
+                    <div class="footprint-total">Total: <strong data-footprint-total>—</strong></div>
+                </div>
+            </div>
+
             <div class="fuckup-fields" id="fuckup-fields">
                 <h2>fuckup meta</h2>
 
@@ -352,5 +440,100 @@ $simpleBalanceQuestions = [
         typeSelect.addEventListener('change', syncTypeUI);
         syncTypeUI();
     }
+
+    const footprintForm = document.querySelector('[data-footprint-form]');
+    if (!footprintForm) {
+        return;
+    }
+
+    const rowsBox = footprintForm.querySelector('[data-footprint-rows]');
+    const addButton = footprintForm.querySelector('[data-footprint-add]');
+    const totalBox = footprintForm.querySelector('[data-footprint-total]');
+
+    function formatKg(value) {
+        if (!Number.isFinite(value)) {
+            return '—';
+        }
+
+        if (value > 0 && value < 0.01) {
+            return value.toFixed(4) + ' kgCO2e';
+        }
+
+        return value.toFixed(2) + ' kgCO2e';
+    }
+
+    function syncFootprintTotals() {
+        let total = 0;
+
+        rowsBox.querySelectorAll('[data-footprint-row]').forEach(function (row) {
+            const select = row.querySelector('[data-footprint-factor]');
+            const quantityInput = row.querySelector('[data-footprint-quantity]');
+            const subtotalBox = row.querySelector('[data-footprint-subtotal]');
+            const selected = select && select.selectedOptions.length ? select.selectedOptions[0] : null;
+            const factor = selected ? Number.parseFloat(selected.getAttribute('data-factor') || '') : NaN;
+            const quantity = quantityInput ? Number.parseFloat(quantityInput.value || '') : NaN;
+            const subtotal = Number.isFinite(factor) && Number.isFinite(quantity) ? factor * quantity : NaN;
+
+            if (Number.isFinite(subtotal)) {
+                total += subtotal;
+                subtotalBox.textContent = formatKg(subtotal);
+            } else {
+                subtotalBox.textContent = '—';
+            }
+        });
+
+        totalBox.textContent = formatKg(total);
+    }
+
+    function bindRow(row) {
+        const select = row.querySelector('[data-footprint-factor]');
+        const quantityInput = row.querySelector('[data-footprint-quantity]');
+        const removeButton = row.querySelector('[data-footprint-remove]');
+
+        if (select) {
+            select.addEventListener('change', syncFootprintTotals);
+        }
+
+        if (quantityInput) {
+            quantityInput.addEventListener('input', syncFootprintTotals);
+        }
+
+        if (removeButton) {
+            removeButton.addEventListener('click', function () {
+                const rows = rowsBox.querySelectorAll('[data-footprint-row]');
+                if (rows.length <= 1) {
+                    if (select) select.value = '';
+                    if (quantityInput) quantityInput.value = '';
+                } else {
+                    row.remove();
+                }
+                syncFootprintTotals();
+            });
+        }
+    }
+
+    rowsBox.querySelectorAll('[data-footprint-row]').forEach(bindRow);
+
+    if (addButton) {
+        addButton.addEventListener('click', function () {
+            const firstRow = rowsBox.querySelector('[data-footprint-row]');
+            if (!firstRow) {
+                return;
+            }
+
+            const clone = firstRow.cloneNode(true);
+            const select = clone.querySelector('[data-footprint-factor]');
+            const quantityInput = clone.querySelector('[data-footprint-quantity]');
+            const subtotalBox = clone.querySelector('[data-footprint-subtotal]');
+            if (select) select.value = '';
+            if (quantityInput) quantityInput.value = '';
+            if (subtotalBox) subtotalBox.textContent = '—';
+            rowsBox.appendChild(clone);
+            bindRow(clone);
+            syncFootprintTotals();
+        });
+    }
+
+    syncFootprintTotals();
 })();
 </script>

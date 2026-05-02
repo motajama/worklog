@@ -17,6 +17,7 @@ return [
     'nav.about' => 'about',
     'nav.dashboard' => 'dashboard',
     'nav.entries' => 'entries',
+    'nav.footprint' => 'footprint',
     'nav.settings' => 'settings',
 
     /*
@@ -137,6 +138,9 @@ return [
     'page.admin_entries_title' => 'entries',
     'page.admin_entry_create_title' => 'new entry',
     'page.admin_entry_edit_title' => 'edit entry',
+    'page.admin_footprint_title' => 'footprint factors',
+    'page.admin_footprint_create_title' => 'new footprint factor',
+    'page.admin_footprint_edit_title' => 'edit footprint factor',
 
     'label.category' => 'category',
     'label.body' => 'body',

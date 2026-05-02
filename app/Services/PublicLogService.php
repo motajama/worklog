@@ -17,6 +17,8 @@ class PublicLogService
                 e.public_text,
                 e.entry_type,
                 e.allow_reflections,
+                e.emissions_total_kg,
+                e.emissions_status,
                 c.name AS category_name,
                 c.kind AS category_kind
              FROM entries e
@@ -66,6 +68,8 @@ class PublicLogService
             }
         }
 
+        $footprintItemsByEntry = FootprintService::itemsForEntries($entryIds);
+
         $balance = BalanceService::lastClosedMonthSummary(null);
         $scientific = BalanceService::questionnaireSummary(
             $balance['date_from'],
@@ -75,8 +79,12 @@ class PublicLogService
         $scientificTrend12 = BalanceService::approximateTrendLast12Months(null);
 
         return [
-            'month_groups' => self::groupByMonth($entries, $reflectionsByEntry),
+            'month_groups' => self::groupByMonth($entries, $reflectionsByEntry, $footprintItemsByEntry),
             'work_mix' => self::workMix($workMixDays),
+            'footprint_public_summary' => [
+                'ready' => false,
+                'note' => 'Reserved for future public aggregate footprint statistics.',
+            ],
 
             // public log: balance vždy za poslední uzavřený měsíc,
             // stále ale z celého datasetu (public + private + internal)
@@ -138,7 +146,7 @@ class PublicLogService
         ];
     }
 
-    protected static function groupByMonth(array $entries, array $reflectionsByEntry = []): array
+    protected static function groupByMonth(array $entries, array $reflectionsByEntry = [], array $footprintItemsByEntry = []): array
     {
         $groups = [];
 
@@ -177,6 +185,9 @@ class PublicLogService
                 'entry_type' => $entry['entry_type'],
                 'category_name' => $entry['category_name'],
                 'entry_date' => $entry['entry_date'],
+                'emissions_total_kg' => (float) ($entry['emissions_total_kg'] ?? 0),
+                'emissions_status' => $entry['emissions_status'] ?? 'not_rated',
+                'footprint_items' => $footprintItemsByEntry[$entryId] ?? [],
                 'allow_reflections' => (int) ($entry['allow_reflections'] ?? 0),
                 'reflections' => $reflectionsByEntry[$entryId] ?? [],
             ];

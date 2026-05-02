@@ -72,6 +72,10 @@ CREATE TABLE IF NOT EXISTS entries (
     workload_override DECIMAL(10,2) NULL,
     recovery_override DECIMAL(10,2) NULL,
 
+    emissions_total_kg DECIMAL(18,9) NOT NULL DEFAULT 0,
+    emissions_status ENUM('not_rated', 'partial', 'complete') NOT NULL DEFAULT 'not_rated',
+    footprint_updated_at DATETIME NULL,
+
     copsoq_quantitative_demands TINYINT UNSIGNED NULL,
     copsoq_work_pace TINYINT UNSIGNED NULL,
     copsoq_cognitive_demands TINYINT UNSIGNED NULL,
@@ -148,6 +152,27 @@ CREATE TABLE IF NOT EXISTS entry_links (
     KEY idx_entry_links_entry (entry_id, sort_order),
     CONSTRAINT fk_entry_links_entry
         FOREIGN KEY (entry_id) REFERENCES entries(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS event_footprint_items (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    event_id INT UNSIGNED NOT NULL,
+    factor_id INT UNSIGNED NULL,
+    label_snapshot VARCHAR(255) NOT NULL,
+    category_snapshot ENUM('device', 'transport', 'ai', 'energy', 'other') NOT NULL,
+    base_unit_snapshot ENUM('hour', 'event', 'km', 'kwh') NOT NULL,
+    factor_kg_per_unit_snapshot DECIMAL(18,9) NOT NULL,
+    quantity DECIMAL(18,6) NOT NULL,
+    emissions_kg DECIMAL(18,9) NOT NULL,
+    factor_snapshot_json JSON NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_event_footprint_items_event (event_id),
+    KEY idx_event_footprint_items_factor (factor_id),
+    CONSTRAINT fk_event_footprint_items_entry
+        FOREIGN KEY (event_id) REFERENCES entries(id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -257,3 +282,80 @@ CREATE TABLE IF NOT EXISTS users (
     PRIMARY KEY (id),
     UNIQUE KEY uq_users_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS footprint_factors (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id INT UNSIGNED NOT NULL,
+    label VARCHAR(255) NOT NULL,
+    category ENUM('device', 'transport', 'ai', 'energy', 'other') NOT NULL,
+    base_unit ENUM('hour', 'event', 'km', 'kwh') NOT NULL,
+    factor_kg_per_unit DECIMAL(18,9) NOT NULL,
+    source_note TEXT NULL,
+    methodology_note TEXT NULL,
+    geography_code VARCHAR(20) NULL,
+    active TINYINT(1) NOT NULL DEFAULT 1,
+    editable_by_user TINYINT(1) NOT NULL DEFAULT 1,
+    is_seed TINYINT(1) NOT NULL DEFAULT 0,
+    valid_from DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    review_after DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_footprint_factors_user (user_id, active, category),
+    CONSTRAINT fk_footprint_factors_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS recurring_footprint_rules (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id INT UNSIGNED NOT NULL,
+    factor_id INT UNSIGNED NOT NULL,
+    label VARCHAR(255) NOT NULL,
+    quantity DECIMAL(18,6) NOT NULL,
+    frequency ENUM('daily', 'weekly', 'monthly') NOT NULL,
+    by_weekday TINYINT UNSIGNED NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NULL,
+    active TINYINT(1) NOT NULL DEFAULT 1,
+    PRIMARY KEY (id),
+    KEY idx_recurring_footprint_rules_user (user_id, active),
+    KEY idx_recurring_footprint_rules_factor (factor_id),
+    CONSTRAINT fk_recurring_footprint_rules_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_recurring_footprint_rules_factor
+        FOREIGN KEY (factor_id) REFERENCES footprint_factors(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS recurring_footprint_instances (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    rule_id INT UNSIGNED NOT NULL,
+    user_id INT UNSIGNED NOT NULL,
+    occurrence_date DATE NOT NULL,
+    quantity DECIMAL(18,6) NOT NULL,
+    emissions_kg DECIMAL(18,9) NOT NULL,
+    factor_snapshot_json JSON NOT NULL,
+    status ENUM('generated', 'skipped') NOT NULL DEFAULT 'generated',
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_recurring_footprint_instances_rule_date (rule_id, occurrence_date),
+    KEY idx_recurring_footprint_instances_user_date (user_id, occurrence_date),
+    CONSTRAINT fk_recurring_footprint_instances_rule
+        FOREIGN KEY (rule_id) REFERENCES recurring_footprint_rules(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_recurring_footprint_instances_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE event_footprint_items
+    ADD CONSTRAINT fk_event_footprint_items_factor
+        FOREIGN KEY (factor_id) REFERENCES footprint_factors(id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL;

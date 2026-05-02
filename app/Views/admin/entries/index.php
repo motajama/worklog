@@ -29,6 +29,7 @@
                             <th><?php echo e(t('label.category')); ?></th>
                             <th><?php echo e(t('label.project')); ?></th>
                             <th><?php echo e(t('label.minutes')); ?></th>
+                            <th>footprint</th>
                             <th><?php echo e(t('label.visibility')); ?></th>
                             <th>akce</th>
                         </tr>
@@ -51,6 +52,16 @@
                                 </td>
                                 <td><?php echo e($entry['project_title'] ?? '—'); ?></td>
                                 <td><?php echo e((string) $entry['minutes']); ?></td>
+                                <td>
+                                    <?php if (($entry['emissions_status'] ?? 'not_rated') === 'not_rated'): ?>
+                                        <span class="status-badge">not rated</span>
+                                    <?php else: ?>
+                                        <?php echo e(\App\Services\FootprintService::formatKg($entry['emissions_total_kg'] ?? 0)); ?>
+                                        <?php if (($entry['emissions_status'] ?? '') === 'partial'): ?>
+                                            <div class="table-subline">partial</div>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?php echo e($entry['visibility']); ?></td>
                                 <td>
                                     <a href="<?php echo e(route_url('admin.entries.edit', ['id' => $entry['id']])); ?>">

@@ -81,10 +81,10 @@ $copy = $isEn
         'switch_cs' => 'CZ',
         'switch_en' => 'EN',
         'skins_label' => 'skin',
-        'balance_heading_closed' => 'recovery balance / closed month: %s',
+        'balance_heading_closed' => 'recovery balance (%s)',
         'balance_heading_fallback' => 'recovery balance / last %d days',
         'balance_tooltip' => 'What this means: this compares how much demanding work was logged with how much active recovery was logged. Harder work counts a bit more, and restorative time counts as recovery. Around 1.00 means recovery roughly matched the need. Below 1.00 suggests a recovery debt; above 1.00 suggests a surplus.',
-        'scientific_heading_closed' => 'quick self-check / closed month: %s',
+        'scientific_heading_closed' => 'strain reflection (%s)',
         'scientific_heading_fallback' => 'quick self-check / last %d days',
         'scientific_tooltip' => 'What this means: this is a quick personal check-in. It asks how heavy work felt, how tired you felt, and how well you recovered. The score is not a medical measure; it is a simple signal for noticing patterns over time. Higher is better.',
         'trend_heading' => 'recovery ratio / last 12 closed months',
@@ -113,6 +113,8 @@ $copy = $isEn
         'send' => 'send reflection',
         'anonymous_author' => 'anonymous',
         'nameless_author' => 'no name',
+        'footprint_label' => ':: carbon footprint :',
+        'footprint_details' => 'footprint details',
         'panel_intro_text' => 'Click “↗ Reflections” next to an entry and the thread will open here. The pane stays fixed while the page moves underneath it.',
         'fail_badge' => 'FAIL',
         'footer_note' => 'CC-BY-ND-NC %s',
@@ -123,13 +125,13 @@ $copy = $isEn
         'switch_cs' => 'CZ',
         'switch_en' => 'EN',
         'skins_label' => 'skin',
-        'balance_heading_closed' => 'duševní hygiena (recovery ratio) / uzavřený měsíc: %s',
+        'balance_heading_closed' => 'pracovní rovnováha (%s)',
         'balance_heading_fallback' => 'duševní hygiena (recovery ratio) / posledních %d dní',
         'balance_tooltip' => 'Co to znamená: srovnává se, kolik náročné práce je zapsané a kolik aktivní obnovy proti tomu proběhlo. Náročnější práce má větší váhu, regenerační čas se počítá jako obnova. Hodnota kolem 1.00 znamená, že obnova zhruba odpovídá potřebě. Pod 1.00 vzniká dluh, nad 1.00 je rezerva.',
-        'scientific_heading_closed' => 'rychlý self-check / uzavřený měsíc: %s',
+        'scientific_heading_closed' => 'subjektivní zátěž (%s)',
         'scientific_heading_fallback' => 'rychlý self-check / posledních %d dní',
         'scientific_tooltip' => 'Co to znamená: jde o krátké osobní zastavení. Ptá se, jak silný byl pracovní tlak, jaká byla únava a jak dobrá byla obnova. Není to lékařské měření, jen jednoduchý signál pro sledování vzorců v čase. Vyšší číslo je lepší.',
-        'trend_heading' => 'recovery ratio / posledních 12 uzavřených měsíců',
+        'trend_heading' => 'recovery ratio / posledních 12  měsíců',
         'work_heading' => 'work barometer / last %d days',
         'work_total' => 'celkový pracovní čas napříč všemi entries: %s',
         'no_work_data' => 'zatím žádná work data.',
@@ -155,6 +157,8 @@ $copy = $isEn
         'send' => 'odeslat reflexi',
         'anonymous_author' => 'anonym',
         'nameless_author' => 'bez jména',
+        'footprint_label' => ':: uhlíková stopa :',
+        'footprint_details' => 'detail footprintu',
         'panel_intro_text' => 'Klikni na „↗ Reflexe“ u konkrétního entry a vlákno se otevře tady. Panel zůstává fixovaný a stránka pod ním plyne.',
         'fail_badge' => 'FAKAP',
         'footer_note' => 'CC-BY-ND-NC %s',
@@ -407,6 +411,13 @@ echo e($trendLabelsDisplay);
 
                                             <?php echo e($entry['text']); ?>
 
+                                            <?php if (($entry['emissions_status'] ?? 'not_rated') !== 'not_rated'): ?>
+                                                <span class="entry-footprint">
+                                                    <?php echo e($copy['footprint_label']); ?>:
+                                                    <?php echo e(\App\Services\FootprintService::formatKg($entry['emissions_total_kg'] ?? 0)); ?>
+                                                </span>
+                                            <?php endif; ?>
+
                                             <?php if ($hasReflectionThread): ?>
                                                 <a
                                                     href="#<?php echo e($panelId); ?>"
@@ -420,7 +431,8 @@ echo e($trendLabelsDisplay);
                                                 </a>
                                             <?php endif; ?>
                                         </div>
-                                    </li>
+
+                                   </li>
                                 <?php endforeach; ?>
                             </ul>
                         <?php endif; ?>
