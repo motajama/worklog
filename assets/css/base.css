@@ -205,6 +205,10 @@ td {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .card h2 {
     margin-top: 0;
     font-size: 1rem;
@@ -457,7 +461,8 @@ button {
 }
 
 @media (max-width: 720px) {
-    .grid-2 {
+    .grid-2,
+    .grid-3 {
         grid-template-columns: 1fr;
     }
 
@@ -481,6 +486,7 @@ button {
 }
 
 .footprint-fields,
+.routine-fields,
 .questionnaire-fields {
     margin-top: 1rem;
     padding-top: 1rem;
@@ -488,6 +494,7 @@ button {
 }
 
 .footprint-fields h2,
+.routine-fields h2,
 .questionnaire-fields h2 {
     margin-top: 0;
 }
@@ -503,6 +510,20 @@ button {
 }
 
 .footprint-row .form-row {
+    margin-bottom: 0;
+}
+
+.routine-row {
+    display: grid;
+    grid-template-columns: minmax(14rem, 2fr) minmax(7rem, 1fr) minmax(7rem, 1fr) minmax(7rem, 1fr) minmax(6rem, auto);
+    gap: 0.75rem;
+    align-items: end;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dotted currentColor;
+}
+
+.routine-row .form-row {
     margin-bottom: 0;
 }
 
@@ -702,7 +723,8 @@ button {
         grid-template-columns: 1fr;
     }
 
-    .footprint-row {
+    .footprint-row,
+    .routine-row {
         grid-template-columns: 1fr;
     }
 }

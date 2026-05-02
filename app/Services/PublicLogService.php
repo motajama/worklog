@@ -79,10 +79,15 @@ class PublicLogService
         );
         $scientificTrend12 = BalanceService::approximateTrendLast12Months(null);
 
+        $carbonPerHourEvents = array_merge(
+            $entries,
+            RoutineService::syntheticEventsForMonthlyCarbonPerHour()
+        );
+
         return [
             'month_groups' => self::groupByMonth($entries, $reflectionsByEntry, $footprintItemsByEntry),
             'work_mix' => self::workMix($workMixDays),
-            'carbon_per_hour_monthly' => FootprintService::aggregateMonthlyMedianCarbonPerHour($entries),
+            'carbon_per_hour_monthly' => FootprintService::aggregateMonthlyMedianCarbonPerHour($carbonPerHourEvents),
             'footprint_public_summary' => [
                 'ready' => false,
                 'note' => 'Reserved for future public aggregate footprint statistics.',

@@ -18,6 +18,7 @@ return [
     'nav.dashboard' => 'dashboard',
     'nav.entries' => 'záznamy',
     'nav.footprint' => 'footprint',
+    'nav.routines' => 'rutiny',
     'nav.settings' => 'nastavení',
 
     /*
@@ -141,6 +142,9 @@ return [
     'page.admin_footprint_title' => 'footprint faktory',
     'page.admin_footprint_create_title' => 'nový footprint faktor',
     'page.admin_footprint_edit_title' => 'editace footprint faktoru',
+    'page.admin_routines_title' => 'rutiny',
+    'page.admin_routine_create_title' => 'nová rutina',
+    'page.admin_routine_edit_title' => 'editace rutiny',
 
     'label.category' => 'kategorie',
     'label.body' => 'text',

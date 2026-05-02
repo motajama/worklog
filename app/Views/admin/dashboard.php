@@ -10,7 +10,7 @@ $pendingReflections = $pending_reflections ?? [];
 $balance7 = $balance_7 ?? null;
 $balance30 = $balance_30 ?? null;
 $footprint30 = $footprint_30 ?? ['emissions_total_kg' => 0, 'not_rated_count' => 0, 'entry_count' => 0];
-$recurringFootprint30 = $recurring_footprint_30 ?? ['emissions_total_kg' => 0, 'instance_count' => 0];
+$routineFootprint30 = $routine_footprint_30 ?? ['emissions_total_kg' => 0, 'occurrence_count' => 0, 'routine_count' => 0];
 $carbonPerHourMonthly = $carbon_per_hour_monthly ?? [];
 $latestCarbonPerHourMonth = $carbonPerHourMonthly !== []
     ? $carbonPerHourMonthly[count($carbonPerHourMonthly) - 1]
@@ -78,19 +78,19 @@ $carbonCopy = $isEn
         </article>
 
         <article class="card stat-card">
-            <h2>recurring footprint / 30 days</h2>
-            <div class="stat-number"><?php echo e($formatKg($recurringFootprint30['emissions_total_kg'])); ?></div>
+            <h2>routine footprint / 30 days</h2>
+            <div class="stat-number"><?php echo e($formatKg($routineFootprint30['emissions_total_kg'])); ?></div>
             <div class="table-subline">
-                <?php echo e((string) $recurringFootprint30['instance_count']); ?> generated instances
+                <?php echo e((string) $routineFootprint30['occurrence_count']); ?> expected occurrences / <?php echo e((string) $routineFootprint30['routine_count']); ?> routines
             </div>
         </article>
 
         <article class="card stat-card">
             <h2>combined footprint / 30 days</h2>
             <div class="stat-number">
-                <?php echo e($formatKg((float) $footprint30['emissions_total_kg'] + (float) $recurringFootprint30['emissions_total_kg'])); ?>
+                <?php echo e($formatKg((float) $footprint30['emissions_total_kg'] + (float) $routineFootprint30['emissions_total_kg'])); ?>
             </div>
-            <div class="table-subline">event + recurring, kgCO2e</div>
+            <div class="table-subline">event + routine, kgCO2e</div>
         </article>
     </div>
 

@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS footprint_factors (
     user_id INT UNSIGNED NOT NULL,
     label VARCHAR(255) NOT NULL,
     category ENUM('device', 'transport', 'ai', 'energy', 'other') NOT NULL,
-    base_unit ENUM('hour', 'event', 'km', 'kwh') NOT NULL,
+    base_unit ENUM('hour', 'event', 'km', 'kwh', 'token') NOT NULL,
     factor_kg_per_unit DECIMAL(18,9) NOT NULL,
     source_note TEXT NULL,
     methodology_note TEXT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS event_footprint_items (
     factor_id INT UNSIGNED NULL,
     label_snapshot VARCHAR(255) NOT NULL,
     category_snapshot ENUM('device', 'transport', 'ai', 'energy', 'other') NOT NULL,
-    base_unit_snapshot ENUM('hour', 'event', 'km', 'kwh') NOT NULL,
+    base_unit_snapshot ENUM('hour', 'event', 'km', 'kwh', 'token') NOT NULL,
     factor_kg_per_unit_snapshot DECIMAL(18,9) NOT NULL,
     quantity DECIMAL(18,6) NOT NULL,
     emissions_kg DECIMAL(18,9) NOT NULL,
@@ -119,6 +119,7 @@ JOIN (
     UNION ALL SELECT 'Tram trip CZ', 'transport', 'km', 0.010, 'editable user estimate', 'Editable estimate stored as kgCO2e per km.'
     UNION ALL SELECT 'OpenAI standard use', 'ai', 'event', 0.0002, 'editable user estimate', 'AI footprint is an editable estimate, not a measured truth.'
     UNION ALL SELECT 'Codex coding session', 'ai', 'hour', 0.020, 'editable user estimate', 'AI footprint is an editable estimate, not a measured truth.'
+    UNION ALL SELECT 'Token use (configured estimate)', 'ai', 'token', 0.0000000002, 'configurable app estimate', 'Default comes from app.footprint.token_kg_per_token.'
 ) f
 WHERE NOT EXISTS (
     SELECT 1 FROM footprint_factors existing WHERE existing.user_id = u.id

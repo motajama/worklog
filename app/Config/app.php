@@ -28,6 +28,10 @@ return [
         'long_window_days' => 30,
     ],
 
+    'footprint' => [
+        'token_kg_per_token' => 0.0000000002,
+    ],
+
     'entry_types' => [
         'achievement',
         'fuckup',

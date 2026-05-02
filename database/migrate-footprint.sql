@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS footprint_factors (
     category VARCHAR(30) NOT NULL
         CHECK (category IN ('device', 'transport', 'ai', 'energy', 'other')),
     base_unit VARCHAR(20) NOT NULL
-        CHECK (base_unit IN ('hour', 'event', 'km', 'kwh')),
+        CHECK (base_unit IN ('hour', 'event', 'km', 'kwh', 'token')),
     factor_kg_per_unit DECIMAL(18,9) NOT NULL
         CHECK (factor_kg_per_unit >= 0),
     source_note TEXT,
@@ -145,6 +145,7 @@ CROSS JOIN (
     UNION ALL SELECT 'Tram trip CZ', 'transport', 'km', 0.010, 'editable user estimate', 'Editable estimate stored as kgCO2e per km.'
     UNION ALL SELECT 'OpenAI standard use', 'ai', 'event', 0.0002, 'editable user estimate', 'AI footprint is an editable estimate, not a measured truth.'
     UNION ALL SELECT 'Codex coding session', 'ai', 'hour', 0.020, 'editable user estimate', 'AI footprint is an editable estimate, not a measured truth.'
+    UNION ALL SELECT 'Token use (configured estimate)', 'ai', 'token', 0.0000000002, 'configurable app estimate', 'Default comes from app.footprint.token_kg_per_token.'
 ) f
 WHERE NOT EXISTS (
     SELECT 1 FROM footprint_factors existing WHERE existing.user_id = u.id

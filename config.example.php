@@ -7,6 +7,10 @@ return [
         'app_version' => '1.0.0',
         'base_path' => '/worklog',
 
+        'footprint' => [
+            'token_kg_per_token' => 0.0000000002,
+        ],
+
         'public_log' => [
             'copy' => [
                 'cs' => [

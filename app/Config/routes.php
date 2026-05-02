@@ -7,6 +7,7 @@ use App\Controllers\FootprintController;
 use App\Controllers\HomeController;
 use App\Controllers\ProjectController;
 use App\Controllers\ReflectionController;
+use App\Controllers\RoutineController;
 use App\Controllers\SettingsController;
 
 return [
@@ -170,6 +171,42 @@ return [
         'path' => '/admin/footprint/{id}/update',
         'name' => 'admin.footprint.update',
         'handler' => [FootprintController::class, 'update'],
+        'middleware' => ['auth'],
+    ],
+
+    [
+        'method' => 'GET',
+        'path' => '/admin/routines',
+        'name' => 'admin.routines.index',
+        'handler' => [RoutineController::class, 'index'],
+        'middleware' => ['auth'],
+    ],
+    [
+        'method' => 'GET',
+        'path' => '/admin/routine/create',
+        'name' => 'admin.routines.create',
+        'handler' => [RoutineController::class, 'create'],
+        'middleware' => ['auth'],
+    ],
+    [
+        'method' => 'POST',
+        'path' => '/admin/routine/store',
+        'name' => 'admin.routines.store',
+        'handler' => [RoutineController::class, 'store'],
+        'middleware' => ['auth'],
+    ],
+    [
+        'method' => 'GET',
+        'path' => '/admin/routine/{id}/edit',
+        'name' => 'admin.routines.edit',
+        'handler' => [RoutineController::class, 'edit'],
+        'middleware' => ['auth'],
+    ],
+    [
+        'method' => 'POST',
+        'path' => '/admin/routine/{id}/update',
+        'name' => 'admin.routines.update',
+        'handler' => [RoutineController::class, 'update'],
         'middleware' => ['auth'],
     ],
 

@@ -32,7 +32,13 @@ class FootprintService
             'event' => 'event',
             'km' => 'km',
             'kwh' => 'kwh',
+            'token' => 'token',
         ];
+    }
+
+    public static function configuredTokenKgPerToken(): float
+    {
+        return (float) config('app.footprint.token_kg_per_token', 0.0000000002);
     }
 
     public static function frequencyOptions(): array
@@ -340,7 +346,7 @@ class FootprintService
         ];
     }
 
-    public static function monthlyMedianCarbonPerHour(?string $visibility = null): array
+    public static function monthlyMedianCarbonPerHour(?string $visibility = null, bool $includeRoutines = false): array
     {
         $where = '';
         $params = [];
@@ -361,6 +367,10 @@ class FootprintService
              ORDER BY entry_date ASC, id ASC",
             $params
         );
+
+        if ($includeRoutines) {
+            $events = array_merge($events, RoutineService::syntheticEventsForMonthlyCarbonPerHour());
+        }
 
         return self::aggregateMonthlyMedianCarbonPerHour($events);
     }

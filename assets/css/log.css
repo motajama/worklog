@@ -156,6 +156,20 @@ body {
     margin-bottom: 2.8rem;
 }
 
+.log-summary-grid .log-section h2 {
+    text-align: center;
+    margin-bottom: 1.15rem;
+}
+
+.log-summary-grid .ascii-chart,
+.log-summary-grid .carbon-chart {
+    margin-top: 0.85rem;
+}
+
+.log-summary-grid .muted-line {
+    text-align: center;
+}
+
 .log-section {
     margin-bottom: 2.5rem;
 }

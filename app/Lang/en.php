@@ -18,6 +18,7 @@ return [
     'nav.dashboard' => 'dashboard',
     'nav.entries' => 'entries',
     'nav.footprint' => 'footprint',
+    'nav.routines' => 'routines',
     'nav.settings' => 'settings',
 
     /*
@@ -141,6 +142,9 @@ return [
     'page.admin_footprint_title' => 'footprint factors',
     'page.admin_footprint_create_title' => 'new footprint factor',
     'page.admin_footprint_edit_title' => 'edit footprint factor',
+    'page.admin_routines_title' => 'routines',
+    'page.admin_routine_create_title' => 'new routine',
+    'page.admin_routine_edit_title' => 'edit routine',
 
     'label.category' => 'category',
     'label.body' => 'body',

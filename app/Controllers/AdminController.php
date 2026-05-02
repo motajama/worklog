@@ -6,6 +6,7 @@ use App\Core\DB;
 use App\Core\View;
 use App\Services\BalanceService;
 use App\Services\FootprintService;
+use App\Services\RoutineService;
 
 class AdminController
 {
@@ -63,8 +64,8 @@ class AdminController
             'balance_7' => BalanceService::rangeSummary(7),
             'balance_30' => BalanceService::rangeSummary(30),
             'footprint_30' => FootprintService::totalsForPeriod(30),
-            'recurring_footprint_30' => FootprintService::recurringTotalsForPeriod(30),
-            'carbon_per_hour_monthly' => FootprintService::monthlyMedianCarbonPerHour(),
+            'routine_footprint_30' => RoutineService::totalsForPeriod(30),
+            'carbon_per_hour_monthly' => FootprintService::monthlyMedianCarbonPerHour(null, true),
         ]);
     }
 }

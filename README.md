@@ -247,6 +247,19 @@ mysql your_database < database/migrate-footprint.mysql.sql
 sqlite3 database/worklog.sqlite < database/migrate-footprint.sql
 ```
 
+For routine tracking, run the routine migration as well:
+
+```bash
+mysql your_database < database/migrate-routines.mysql.sql
+sqlite3 database/worklog.sqlite < database/migrate-routines.sql
+```
+
+If you already had footprint tables before token units were added and you use MySQL, also run:
+
+```bash
+mysql your_database < database/migrate-token-unit.mysql.sql
+```
+
 Then open `/admin/footprint` once to review the seeded editable factors.
 
 ---

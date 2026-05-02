@@ -48,7 +48,7 @@ $activeChecked = old('active', (int) ($factor['active'] ?? 1) === 1 ? '1' : '');
 
                 <div class="form-row">
                     <label for="base_unit">base unit</label>
-                    <select id="base_unit" name="base_unit" required>
+                    <select id="base_unit" name="base_unit" required data-token-factor="<?php echo e((string) \App\Services\FootprintService::configuredTokenKgPerToken()); ?>">
                         <?php foreach ($unit_options as $value => $label): ?>
                             <option value="<?php echo e($value); ?>" <?php echo $factorData['base_unit'] === $value ? 'selected' : ''; ?>>
                                 <?php echo e($label); ?>
@@ -62,6 +62,7 @@ $activeChecked = old('active', (int) ($factor['active'] ?? 1) === 1 ? '1' : '');
                 <div class="form-row">
                     <label for="factor_kg_per_unit">kgCO2e / unit</label>
                     <input type="number" id="factor_kg_per_unit" name="factor_kg_per_unit" value="<?php echo e((string) $factorData['factor_kg_per_unit']); ?>" min="0" step="0.000000001" required>
+                    <div class="help-line">Token default in config: <?php echo e((string) \App\Services\FootprintService::configuredTokenKgPerToken()); ?> kgCO2e / token.</div>
                 </div>
 
                 <div class="form-row">
@@ -109,3 +110,19 @@ $activeChecked = old('active', (int) ($factor['active'] ?? 1) === 1 ? '1' : '');
         </form>
     </article>
 </section>
+
+<script>
+(function () {
+    const unitSelect = document.getElementById('base_unit');
+    const factorInput = document.getElementById('factor_kg_per_unit');
+    if (!unitSelect || !factorInput) return;
+
+    unitSelect.addEventListener('change', function () {
+        if (unitSelect.value !== 'token' || factorInput.value !== '') {
+            return;
+        }
+
+        factorInput.value = unitSelect.getAttribute('data-token-factor') || '';
+    });
+})();
+</script>
