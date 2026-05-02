@@ -55,11 +55,11 @@ $allowReflectionsChecked = old(
 $workCategories = array_values(array_filter($categories, fn($c) => $c['kind'] === 'work'));
 $recoveryCategories = array_values(array_filter($categories, fn($c) => $c['kind'] === 'recovery'));
 
-$averageScore = static function (array $fields) use ($entryData): string {
+$averageScore = static function (array $fields) use ($entry): string {
     $values = [];
 
     foreach ($fields as $field) {
-        $value = $entryData[$field] ?? '';
+        $value = $entry[$field] ?? '';
 
         if ($value !== '' && is_numeric($value)) {
             $values[] = (int) $value;
@@ -74,19 +74,19 @@ $averageScore = static function (array $fields) use ($entryData): string {
 };
 
 $simpleBalanceData = [
-    'balance_workload' => old('balance_workload', $averageScore([
+    'balance_workload' => (string) old('balance_workload', $averageScore([
         'copsoq_quantitative_demands',
         'copsoq_work_pace',
         'copsoq_cognitive_demands',
         'copsoq_low_control',
     ])),
-    'balance_fatigue' => old('balance_fatigue', $averageScore([
+    'balance_fatigue' => (string) old('balance_fatigue', $averageScore([
         'nfr_exhausted',
         'nfr_detach_difficulty',
         'nfr_need_long_recovery',
         'nfr_overload',
     ])),
-    'balance_recovery' => old('balance_recovery', $averageScore([
+    'balance_recovery' => (string) old('balance_recovery', $averageScore([
         'recovery_detachment',
         'recovery_relaxation',
         'recovery_mastery',
@@ -111,6 +111,10 @@ $simpleBalanceQuestions = [
 
 $footprintFactors = $footprint_factors ?? [];
 $storedFootprintItems = $footprint_items ?? [];
+$storedFootprintItemsById = [];
+foreach ($storedFootprintItems as $item) {
+    $storedFootprintItemsById[(string) ($item['id'] ?? '')] = $item;
+}
 $oldFootprintFactorIds = old('footprint_factor_id', null);
 $oldFootprintQuantities = old('footprint_quantity', null);
 $footprintRows = [];
@@ -121,9 +125,21 @@ if (is_array($oldFootprintFactorIds) || is_array($oldFootprintQuantities)) {
     $rowCount = max(count($oldFootprintFactorIds), count($oldFootprintQuantities));
 
     for ($i = 0; $i < $rowCount; $i++) {
+        $factorId = (string) ($oldFootprintFactorIds[$i] ?? '');
+        $snapshotItem = null;
+        if (str_starts_with($factorId, 'snapshot:')) {
+            $itemId = substr($factorId, strlen('snapshot:'));
+            $snapshotItem = $storedFootprintItemsById[$itemId] ?? null;
+            $factorId = '';
+        }
+
         $footprintRows[] = [
-            'factor_id' => (string) ($oldFootprintFactorIds[$i] ?? ''),
+            'factor_id' => $factorId,
             'quantity' => (string) ($oldFootprintQuantities[$i] ?? ''),
+            'item_id' => (string) ($snapshotItem['id'] ?? ''),
+            'label_snapshot' => (string) ($snapshotItem['label_snapshot'] ?? ''),
+            'base_unit_snapshot' => (string) ($snapshotItem['base_unit_snapshot'] ?? ''),
+            'factor_kg_per_unit_snapshot' => (string) ($snapshotItem['factor_kg_per_unit_snapshot'] ?? ''),
         ];
     }
 } else {
@@ -131,6 +147,10 @@ if (is_array($oldFootprintFactorIds) || is_array($oldFootprintQuantities)) {
         $footprintRows[] = [
             'factor_id' => (string) ($item['factor_id'] ?? ''),
             'quantity' => (string) ($item['quantity'] ?? ''),
+            'item_id' => (string) ($item['id'] ?? ''),
+            'label_snapshot' => (string) ($item['label_snapshot'] ?? ''),
+            'base_unit_snapshot' => (string) ($item['base_unit_snapshot'] ?? ''),
+            'factor_kg_per_unit_snapshot' => (string) ($item['factor_kg_per_unit_snapshot'] ?? ''),
         ];
     }
 }
@@ -338,6 +358,17 @@ if ($footprintRows === []) {
                                 <label>faktor</label>
                                 <select name="footprint_factor_id[]" data-footprint-factor>
                                     <option value="">—</option>
+                                    <?php if (($row['factor_id'] ?? '') === '' && ($row['item_id'] ?? '') !== ''): ?>
+                                        <option
+                                            value="snapshot:<?php echo e((string) $row['item_id']); ?>"
+                                            data-factor="<?php echo e((string) ($row['factor_kg_per_unit_snapshot'] ?? 0)); ?>"
+                                            data-unit="<?php echo e((string) ($row['base_unit_snapshot'] ?? '')); ?>"
+                                            data-footprint-snapshot-option
+                                            selected
+                                        >
+                                            <?php echo e((string) ($row['label_snapshot'] ?? 'saved snapshot')); ?> / <?php echo e((string) ($row['base_unit_snapshot'] ?? '')); ?> / <?php echo e((string) ($row['factor_kg_per_unit_snapshot'] ?? 0)); ?> kgCO2e / saved snapshot
+                                        </option>
+                                    <?php endif; ?>
                                     <?php foreach ($footprintFactors as $factor): ?>
                                         <option
                                             value="<?php echo e((string) $factor['id']); ?>"
@@ -345,7 +376,7 @@ if ($footprintRows === []) {
                                             data-unit="<?php echo e((string) $factor['base_unit']); ?>"
                                             <?php echo (string) $row['factor_id'] === (string) $factor['id'] ? 'selected' : ''; ?>
                                         >
-                                            <?php echo e($factor['label']); ?> / <?php echo e($factor['base_unit']); ?> / <?php echo e((string) $factor['factor_kg_per_unit']); ?> kgCO2e
+                                            <?php echo e($factor['label']); ?> / <?php echo e($factor['base_unit']); ?> / <?php echo e((string) $factor['factor_kg_per_unit']); ?> kgCO2e<?php echo (int) ($factor['active'] ?? 1) !== 1 ? ' / inactive' : ''; ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -525,7 +556,12 @@ if ($footprintRows === []) {
             const select = clone.querySelector('[data-footprint-factor]');
             const quantityInput = clone.querySelector('[data-footprint-quantity]');
             const subtotalBox = clone.querySelector('[data-footprint-subtotal]');
-            if (select) select.value = '';
+            if (select) {
+                select.querySelectorAll('[data-footprint-snapshot-option]').forEach(function (option) {
+                    option.remove();
+                });
+                select.value = '';
+            }
             if (quantityInput) quantityInput.value = '';
             if (subtotalBox) subtotalBox.textContent = '—';
             rowsBox.appendChild(clone);

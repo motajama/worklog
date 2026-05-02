@@ -39,7 +39,7 @@ class EntryController
             'mode' => 'create',
             'entry' => self::emptyEntry(),
             'footprint_items' => [],
-            'footprint_factors' => FootprintService::factorsForUser($userId, true),
+            'footprint_factors' => FootprintService::factorsForEntryForm($userId),
             'type_options' => self::typeOptions(),
             'visibility_options' => self::visibilityOptions(),
             'locale_options' => self::localeOptions(),
@@ -117,7 +117,7 @@ class EntryController
             'mode' => 'edit',
             'entry' => $entry,
             'footprint_items' => FootprintService::itemsForEntry((int) $entry['id']),
-            'footprint_factors' => FootprintService::factorsForUser($userId, true),
+            'footprint_factors' => FootprintService::factorsForEntryForm($userId, (int) $entry['id']),
             'type_options' => self::typeOptions(),
             'visibility_options' => self::visibilityOptions(),
             'locale_options' => self::localeOptions(),
@@ -137,8 +137,18 @@ class EntryController
         }
 
         $userId = (int) Auth::id();
+        $existingFootprintItems = FootprintService::itemsForEntry($entryId);
+        $allowedInactiveFactorIds = array_filter(array_map(
+            static fn(array $item): ?int => isset($item['factor_id']) ? (int) $item['factor_id'] : null,
+            $existingFootprintItems
+        ));
+        $existingFootprintItemsById = [];
+        foreach ($existingFootprintItems as $item) {
+            $existingFootprintItemsById[(int) $item['id']] = $item;
+        }
+
         $data = self::validate($_POST, $entryId);
-        $footprint = FootprintService::validateItems($_POST, $userId);
+        $footprint = FootprintService::validateItems($_POST, $userId, $allowedInactiveFactorIds, $existingFootprintItemsById);
         $data['errors'] = array_merge($data['errors'], $footprint['errors']);
 
         if ($data['errors']) {

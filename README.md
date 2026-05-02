@@ -234,15 +234,16 @@ If you are using phpMyAdmin, open the SQL tab and run the contents of `schema.sq
 
 ### Updating an existing install
 
-For an existing database, run the footprint migration before using the new admin UI:
+For an existing database, run the idempotent footprint migration before using the new admin UI:
+
+```bash
+php scripts/migrate_footprint.php
+```
+
+The script uses the configured database driver from `config.php` / environment variables and can be rerun safely. The raw SQL files are kept for manual installs:
 
 ```bash
 mysql your_database < database/migrate-footprint.mysql.sql
-```
-
-For SQLite:
-
-```bash
 sqlite3 database/worklog.sqlite < database/migrate-footprint.sql
 ```
 

@@ -60,6 +60,28 @@ class FootprintService
         );
     }
 
+    public static function factorsForEntryForm(int $userId, ?int $entryId = null): array
+    {
+        if ($entryId === null) {
+            return self::factorsForUser($userId, true);
+        }
+
+        return DB::selectAll(
+            "SELECT DISTINCT f.*
+             FROM footprint_factors f
+             LEFT JOIN event_footprint_items i
+                ON i.factor_id = f.id
+                AND i.event_id = :entry_id
+             WHERE f.user_id = :user_id
+               AND (f.active = 1 OR i.id IS NOT NULL)
+             ORDER BY f.active DESC, f.category ASC, f.label ASC",
+            [
+                'entry_id' => $entryId,
+                'user_id' => $userId,
+            ]
+        );
+    }
+
     public static function factorForUser(int $factorId, int $userId): ?array
     {
         return DB::selectOne(
@@ -111,10 +133,15 @@ class FootprintService
         return $byEntry;
     }
 
-    public static function validateItems(array $input, int $userId): array
-    {
+    public static function validateItems(
+        array $input,
+        int $userId,
+        array $allowedInactiveFactorIds = [],
+        array $existingItemsById = []
+    ): array {
         $factorIds = $input['footprint_factor_id'] ?? [];
         $quantities = $input['footprint_quantity'] ?? [];
+        $allowedInactiveFactorIds = array_flip(array_map('intval', $allowedInactiveFactorIds));
 
         if (!is_array($factorIds)) {
             $factorIds = [];
@@ -142,11 +169,6 @@ class FootprintService
                 continue;
             }
 
-            if (!ctype_digit($factorIdRaw)) {
-                $errors[] = 'Footprint faktor není platný.';
-                continue;
-            }
-
             if (!is_numeric($quantityRaw)) {
                 $errors[] = 'Footprint množství musí být číslo.';
                 continue;
@@ -158,15 +180,48 @@ class FootprintService
                 continue;
             }
 
+            if (str_starts_with($factorIdRaw, 'snapshot:')) {
+                $itemIdRaw = substr($factorIdRaw, strlen('snapshot:'));
+                if (!ctype_digit($itemIdRaw) || !isset($existingItemsById[(int) $itemIdRaw])) {
+                    $errors[] = 'Footprint snapshot není platný.';
+                    continue;
+                }
+
+                $existingItem = $existingItemsById[(int) $itemIdRaw];
+                $factorValue = (float) $existingItem['factor_kg_per_unit_snapshot'];
+                $items[] = [
+                    'factor_id' => isset($existingItem['factor_id']) ? (int) $existingItem['factor_id'] : null,
+                    'label_snapshot' => $existingItem['label_snapshot'],
+                    'category_snapshot' => $existingItem['category_snapshot'],
+                    'base_unit_snapshot' => $existingItem['base_unit_snapshot'],
+                    'factor_kg_per_unit_snapshot' => $factorValue,
+                    'quantity' => $quantity,
+                    'emissions_kg' => round($quantity * $factorValue, 9),
+                    'factor_snapshot_json' => $existingItem['factor_snapshot_json'],
+                ];
+                continue;
+            }
+
+            if (!ctype_digit($factorIdRaw)) {
+                $errors[] = 'Footprint faktor není platný.';
+                continue;
+            }
+
             $factor = self::factorForUser((int) $factorIdRaw, $userId);
-            if (!$factor || (int) ($factor['active'] ?? 0) !== 1) {
+            if (!$factor) {
+                $errors[] = 'Footprint faktor neexistuje nebo není aktivní.';
+                continue;
+            }
+
+            $factorId = (int) $factor['id'];
+            if ((int) ($factor['active'] ?? 0) !== 1 && !isset($allowedInactiveFactorIds[$factorId])) {
                 $errors[] = 'Footprint faktor neexistuje nebo není aktivní.';
                 continue;
             }
 
             $factorValue = (float) $factor['factor_kg_per_unit'];
             $items[] = [
-                'factor_id' => (int) $factor['id'],
+                'factor_id' => $factorId,
                 'label_snapshot' => $factor['label'],
                 'category_snapshot' => $factor['category'],
                 'base_unit_snapshot' => $factor['base_unit'],
