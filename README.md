@@ -160,7 +160,7 @@ database/
 assets/
   css/
     base.css
-    log.css
+    public-log.css
     skins/
 index.php
 log.php
@@ -345,7 +345,7 @@ These fields accept HTML.
 Main files:
 
 - `app/Views/public/log-page.php`
-- `assets/css/log.css`
+- `assets/css/public-log.css`
 
 ### Change the private app layout
 

@@ -199,8 +199,19 @@ $footerHtml = $publicLogDisplay['footer_html'] ?? null;
     <title><?php echo e($copy['title']); ?> — <?php echo e(config('app.app_name')); ?></title>
     <meta name="description" content="<?php echo e($copy['description']); ?>">
 
+    <style>
+        .heading-info { position: relative; display: inline-block; cursor: help; }
+        .heading-info-text { display: none; }
+        .heading-info:hover .heading-info-text,
+        .heading-info:focus .heading-info-text { display: block; }
+        .carbon-interval-excellent { color: #16803a; }
+        .carbon-interval-good { color: #2d74b8; }
+        .carbon-interval-watch { color: #a06a00; }
+        .carbon-interval-high { color: #b84b2d; }
+        .carbon-interval-very-high { color: #9b1c31; }
+    </style>
     <link rel="stylesheet" href="<?php echo e(asset('assets/css/skins/' . $currentSkin . '.css')); ?>">
-    <link rel="stylesheet" href="<?php echo e(asset('assets/css/log.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/css/public-log.css')); ?>">
 </head>
 <body>
     <main class="log-page">
