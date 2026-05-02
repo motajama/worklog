@@ -16,6 +16,7 @@ class PublicLogService
                 e.body,
                 e.public_text,
                 e.entry_type,
+                e.minutes,
                 e.allow_reflections,
                 e.emissions_total_kg,
                 e.emissions_status,
@@ -81,6 +82,7 @@ class PublicLogService
         return [
             'month_groups' => self::groupByMonth($entries, $reflectionsByEntry, $footprintItemsByEntry),
             'work_mix' => self::workMix($workMixDays),
+            'carbon_per_hour_monthly' => FootprintService::aggregateMonthlyMedianCarbonPerHour($entries),
             'footprint_public_summary' => [
                 'ready' => false,
                 'note' => 'Reserved for future public aggregate footprint statistics.',
@@ -177,6 +179,10 @@ class PublicLogService
             }
 
             $entryId = (int) $entry['id'];
+            $carbonPerHour = FootprintService::calculateEventCarbonPerHour($entry);
+            $carbonPerHourClass = $carbonPerHour !== null
+                ? FootprintService::classifyCarbonPerHour($carbonPerHour)
+                : null;
 
             $groups[$monthKey]['entries'][] = [
                 'id' => $entryId,
@@ -185,8 +191,11 @@ class PublicLogService
                 'entry_type' => $entry['entry_type'],
                 'category_name' => $entry['category_name'],
                 'entry_date' => $entry['entry_date'],
+                'minutes' => (int) ($entry['minutes'] ?? 0),
                 'emissions_total_kg' => (float) ($entry['emissions_total_kg'] ?? 0),
                 'emissions_status' => $entry['emissions_status'] ?? 'not_rated',
+                'carbon_per_hour' => $carbonPerHour,
+                'carbon_per_hour_class' => $carbonPerHourClass,
                 'footprint_items' => $footprintItemsByEntry[$entryId] ?? [],
                 'allow_reflections' => (int) ($entry['allow_reflections'] ?? 0),
                 'reflections' => $reflectionsByEntry[$entryId] ?? [],

@@ -187,9 +187,9 @@ body {
     position: absolute;
     z-index: 20;
     top: 1.6em;
-    left: 0;
+    right: 0;
     display: none;
-    width: min(28rem, 78vw);
+    width: min(28rem, calc(100vw - 2rem));
     padding: 0.7rem 0.85rem;
     border: var(--border-strong);
     background: var(--color-panel-bg);
@@ -494,4 +494,80 @@ body {
     letter-spacing: 0;
     font-variant-ligatures: none;
     overflow-x: auto;
+    width: max-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.carbon-chart {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 0.75rem;
+}
+
+.carbon-chart svg {
+    display: block;
+    min-width: 28rem;
+    width: 100%;
+    height: auto;
+}
+
+.carbon-chart-axis,
+.carbon-chart-line {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
+.carbon-chart-line {
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.carbon-chart-point {
+    fill: var(--log-bg, transparent);
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
+.carbon-chart-label,
+.carbon-chart-value {
+    fill: currentColor;
+    font-family: var(--font-mono);
+    font-size: 13px;
+}
+
+.carbon-threshold-line {
+    stroke: currentColor;
+    stroke-width: 2;
+    opacity: 0.3;
+}
+
+.carbon-threshold-label {
+    fill: currentColor;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    opacity: 0.55;
+}
+
+.carbon-interval-excellent {
+    color: #16803a;
+}
+
+.carbon-interval-good {
+    color: #2d74b8;
+}
+
+.carbon-interval-watch {
+    color: #a06a00;
+}
+
+.carbon-interval-high {
+    color: #b84b2d;
+}
+
+.carbon-interval-very-high {
+    color: #9b1c31;
 }

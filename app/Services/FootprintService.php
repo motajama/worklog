@@ -340,6 +340,155 @@ class FootprintService
         ];
     }
 
+    public static function monthlyMedianCarbonPerHour(?string $visibility = null): array
+    {
+        $where = '';
+        $params = [];
+
+        if ($visibility !== null) {
+            $where = 'WHERE visibility = :visibility';
+            $params['visibility'] = $visibility;
+        }
+
+        $events = DB::selectAll(
+            "SELECT
+                entry_date,
+                minutes,
+                emissions_total_kg,
+                emissions_status
+             FROM entries
+             {$where}
+             ORDER BY entry_date ASC, id ASC",
+            $params
+        );
+
+        return self::aggregateMonthlyMedianCarbonPerHour($events);
+    }
+
+    public static function calculateEventDurationHours(array $event): ?float
+    {
+        $minutes = $event['minutes'] ?? null;
+
+        if ($minutes === null || !is_numeric($minutes)) {
+            return null;
+        }
+
+        $minutes = (float) $minutes;
+        if ($minutes <= 0) {
+            return null;
+        }
+
+        return $minutes / 60;
+    }
+
+    public static function calculateEventCarbonPerHour(array $event): ?float
+    {
+        if (($event['emissions_status'] ?? self::STATUS_NOT_RATED) === self::STATUS_NOT_RATED) {
+            return null;
+        }
+
+        $totalKg = $event['emissions_total_kg'] ?? null;
+        if ($totalKg === null || !is_numeric($totalKg)) {
+            return null;
+        }
+
+        $totalKg = (float) $totalKg;
+        if ($totalKg <= 0) {
+            return null;
+        }
+
+        $durationHours = self::calculateEventDurationHours($event);
+        if ($durationHours === null || $durationHours <= 0) {
+            return null;
+        }
+
+        return $totalKg / $durationHours;
+    }
+
+    public static function median(array $values): ?float
+    {
+        $values = array_values(array_filter($values, 'is_numeric'));
+
+        if ($values === []) {
+            return null;
+        }
+
+        sort($values, SORT_NUMERIC);
+        $count = count($values);
+        $middle = intdiv($count, 2);
+
+        if ($count % 2 === 1) {
+            return (float) $values[$middle];
+        }
+
+        return ((float) $values[$middle - 1] + (float) $values[$middle]) / 2;
+    }
+
+    public static function aggregateMonthlyMedianCarbonPerHour(array $events): array
+    {
+        $valuesByMonth = [];
+
+        foreach ($events as $event) {
+            $carbonPerHour = self::calculateEventCarbonPerHour($event);
+            if ($carbonPerHour === null) {
+                continue;
+            }
+
+            $timestamp = strtotime((string) ($event['entry_date'] ?? ''));
+            if ($timestamp === false) {
+                continue;
+            }
+
+            $month = date('Y-m', $timestamp);
+            $valuesByMonth[$month][] = $carbonPerHour;
+        }
+
+        ksort($valuesByMonth);
+
+        $rows = [];
+        foreach ($valuesByMonth as $month => $values) {
+            $median = self::median($values);
+            if ($median === null) {
+                continue;
+            }
+
+            $rows[] = [
+                'month' => $month,
+                'median_kg_per_hour' => round($median, 6),
+                'event_count' => count($values),
+            ];
+        }
+
+        return $rows;
+    }
+
+    public static function classifyCarbonPerHour(float|string|null $kgPerHour): ?array
+    {
+        if ($kgPerHour === null || !is_numeric($kgPerHour)) {
+            return null;
+        }
+
+        $value = (float) $kgPerHour;
+
+        if ($value <= 0.05) {
+            return ['label' => 'Excellent / ecological target', 'level' => 'excellent'];
+        }
+
+        if ($value <= 0.10) {
+            return ['label' => 'Good / normal low-impact work', 'level' => 'good'];
+        }
+
+        if ($value <= 0.15) {
+            return ['label' => 'Conservative / watch zone', 'level' => 'watch'];
+        }
+
+        if ($value <= 0.30) {
+            return ['label' => 'High', 'level' => 'high'];
+        }
+
+        return ['label' => 'Very high', 'level' => 'very-high'];
+    }
+
     public static function generateRecurringInstances(?string $from = null, ?string $to = null): int
     {
         $fromDate = new DateTimeImmutable($from ?: date('Y-m-d', strtotime('-7 days')));

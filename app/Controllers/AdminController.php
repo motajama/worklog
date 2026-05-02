@@ -64,6 +64,7 @@ class AdminController
             'balance_30' => BalanceService::rangeSummary(30),
             'footprint_30' => FootprintService::totalsForPeriod(30),
             'recurring_footprint_30' => FootprintService::recurringTotalsForPeriod(30),
+            'carbon_per_hour_monthly' => FootprintService::monthlyMedianCarbonPerHour(),
         ]);
     }
 }
